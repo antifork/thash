@@ -73,13 +73,14 @@ static struct neo_options opt[] = {
     {'x', no_argument, NULL, NULL, "apply radix64 filter to random strings" },
 
     {'-', 0, 0, NULL, "test:"},
-    {'b', required_argument, "b/sfl23pb", "bit",  "extract black-list (colliding words)"},
-    {'l', required_argument, "l/sfl23pb", "bit",  "calc freestyle collisions"},
-    {'s', required_argument, "s/sfl23pb", "size", "calc fit-table statistics"},
-    {'f', required_argument, "f/sfl23pb", "hash", "find for hash in wordlist"},
-    {'2', no_argument, "2/sfl23pb", NULL, "present 2d-data for gnuplot, xgobi"},
-    {'3', no_argument, "3/sfl23pb", NULL, "present 3d-data for gnuplot, xgobi"},
-    {'p', no_argument, "p/sfl23pb", NULL, "calc hash performance"},
+    {'b', required_argument, "b/stfl23pb", "bit",  "calc n-xor-folding blacklist (colliding words)"},
+    {'l', required_argument, "l/stfl23pb", "bit",  "calc n-xor-folding collisions"},
+    {'s', required_argument, "s/stfl23pb", "size", "calc fit-table statistics (Lazy mod mapping method)"},
+    {'t', required_argument, "t/stfl23pb", "size", "calc fit-table statistics (Retry method)"},
+    {'f', required_argument, "f/stfl23pb", "hash", "find for hash in wordlist"},
+    {'2', no_argument, "2/stfl23pb", NULL, "present 2d-data for gnuplot, xgobi"},
+    {'3', no_argument, "3/stfl23pb", NULL, "present 3d-data for gnuplot, xgobi"},
+    {'p', no_argument, "p/stfl23pb", NULL, "calc hash performance"},
 
     {'v', no_argument, NULL, NULL, "print version"},
     {'h', no_argument, NULL, NULL, "print this help"},
@@ -87,7 +88,7 @@ static struct neo_options opt[] = {
     {'@', no_argument, NULL, NULL, "show options dependencies"},
     {'+', 0, "/co", 0 , 0 },
     {'+', 0, "/wrigx", 0, 0 }, 
-    {'+', 0, "/sfl23pb", 0 , 0 },
+    {'+', 0, "/stfl23pb", 0 , 0 },
     {0, 0, 0, 0, 0}
 };
 
@@ -176,6 +177,11 @@ main (int argc, char **argv, char **env)
              SET (options, OPT_FITSIZE);
              tablen = strtoul (optarg, (char **) NULL, 0);
              break;
+         case 't':
+             SET (options, OPT_RETRY);
+             tablen = strtoul (optarg, (char **) NULL, 0);
+             break;
+
 	 case 'f':
 	     SET (options, OPT_SEARCH);
 	     findhash = strtoul (optarg, (char **) NULL, 0);
@@ -277,6 +283,9 @@ main (int argc, char **argv, char **env)
 	 break;
      case OPT_FITSIZE:
 	 hash_fitest ();
+	 break;
+     case OPT_RETRY:
+	 hash_retry();
 	 break;
      case OPT_COLLISION:
 	 hash_collision ();

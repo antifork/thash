@@ -274,7 +274,8 @@ hash_blacklist ()
 
 	while (drv.read (buf, 79) != NULL) {
 
-	    h = HASH (buf) & bitmask;
+            h = HASH (buf);
+            h = (h>> bitlen) ^ (h & bitmask);
 
 	    if (CHECK_BOUND (i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 
@@ -311,7 +312,8 @@ hash_blacklist ()
 
 	while (drv.read (buf, 79) != NULL) {
 
-	    h = HASH (buf) & bitmask;
+            h = HASH (buf);
+            h = (h>> bitlen) ^ (h & bitmask);
 
 	    if (CHECK_BOUND (i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 		if TST_BIT

@@ -41,11 +41,12 @@
 /* test */
 #define OPT_SEARCH      1<<0
 #define OPT_FITSIZE     1<<1
-#define OPT_COLLISION   1<<2
-#define OPT_BLACKLIST   1<<3
-#define OPT_2D          1<<4
-#define OPT_3D          1<<5
-#define OPT_PERF        1<<6
+#define OPT_RETRY       1<<2
+#define OPT_COLLISION   1<<3
+#define OPT_BLACKLIST   1<<4
+#define OPT_2D          1<<5
+#define OPT_3D          1<<6
+#define OPT_PERF        1<<7
 
 /* input */
 #define OPT_WORDLIST	1<<10
