@@ -41,26 +41,26 @@
 #define Mbyte       <<20
 #define Gbyte       <<30
 
-#define FATAL(f,arg...) {                                               \
+#define FATAL(f,arg...) do { 						\
 fprintf(stderr,"%s:%d: ",__FILE__,__LINE__);          			\
 fprintf(stderr,f,## arg);                                               \
 fprintf(stderr,"\n");                                                   \
 exit(1);                                                                \
-}
+} while (0)
 
-#define PUTS(f,arg...)  ({                                              \
+#define PUTS(f,arg...)  do {                                            \
 fprintf(stderr,f,## arg);                                               \
 fflush (stderr);                                                        \
-})
+} while (0)
 
 #ifdef  EADBUG
-#define DEBUG(f,arg...)  ({                                             \
+#define DEBUG(f,arg...) do {                                            \
 fprintf(stderr,"%s:%d: ",__FILE__,__LINE__);          			\
 fprintf(stderr,f,## arg);                                               \
 fflush (stderr);                                                        \
-})
+} while (0)
 #else
-#define DEBUG(f,arg...) {}
+#define DEBUG(f,arg...) do {} while (0)
 #endif
 
 #define SET(x,y) ( x |=  y )
@@ -68,11 +68,11 @@ fflush (stderr);                                                        \
 #define TST(x,y) ( x &   y )
 
 
-#define MALLOC(p,s) {						\
+#define MALLOC(p,s) do {					\
 (p) = ( typeof(p) ) malloc((s));				\
 if ((p) == NULL )						\
 	FATAL("malloc() virtual memory exhausted\n");		\
-}
+} while (0)
 
 #define HASH(p) ( drv.w_len ? (unsigned long) ext_hash (p, drv.w_len) : (unsigned long) ext_hash (p, strlen(p)) )
 
