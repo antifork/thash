@@ -91,11 +91,11 @@ static struct neo_options opt[] = {
 	{'h', no_argument, NULL, NULL, "print this help"},
 	{'!', no_argument, NULL, NULL, "show options dependencies"},
 
-	{'+', 0, "/co", 0, 0},
-	{'+', 0, "/wrg", 0, 0},
-	{'+', 0, "/blsf23p", 0, 0},
-	{'+', 0, "ax/blf23p", 0, 0},
-	{'+', 0, "mt/s", 0, 0},
+	{'+', 0, "|co", 0, 0},
+	{'+', 0, "|wrg", 0, 0},
+	{'+', 0, "|blsf23p", 0, 0},
+	{'+', 0, "ax|blf23p", 0, 0},
+	{'+', 0, "mt|s", 0, 0},
 
 	{0, 0, 0, 0, 0}
 };

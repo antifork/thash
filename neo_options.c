@@ -37,7 +37,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-static const char cvsid[] = "$cvsid: neo_options.c,v 1.10 2003/05/05 00:17:02 awgn Exp $";
+static const char cvsid[] = "$Id$";
 static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
 
 extern char *__progname;
@@ -93,12 +93,18 @@ compile_optmask(char c, char *s, REG r[], REG m[])
 		switch (s[i]) {
 		case '|':
 			type = OR_MASK;
+			if (c != '+')
+				fatal("[+] %s: wrong separator at \"%s\" (and-mask format is \"x/xy\").\n", 
+					__FUNCTION__,s);  /* error */
                         if (sep != 0)
                                 fatal("[+] %s: parse error at \"%s\" (or-mask).\n", __FUNCTION__,s);  /* error */
 			sep++;
 			continue;
 		case '/':
 			type = AND_MASK;
+                        if (c == '+')
+                                fatal("[+] %s: wrong separator at \"%s\" (or-mask format is \"x|yz\").\n", 
+                                        __FUNCTION__,s);  /* error */
 			if (sep != 0)
 				fatal("[+] %s: -%c parser error at \"%s\" (and-mask).\n", __FUNCTION__,c, s);	/* error */
 			sep++;
@@ -327,6 +333,7 @@ struct neo_options opt[] = {
 	{'-', 0, 0, NULL, "first section"},
 	{'a', no_argument, "a/ab", NULL, "test"},
 //	{'a', no_argument, "a/cb", NULL, "test"}, <- bugus and-mask (never true) (recognized by mask compiler) 
+//	{'k', no_argument, "a|cb", NULL, "test"}, <- wrong separator: and-mask format is "a/ab"
 	{'b', no_argument, "bc/bc", NULL, "test.."},
 	{'-', 0, 0, NULL, "second section"},
 	{'c', required_argument, "cd/cd", "int", "test..."},
@@ -337,6 +344,7 @@ struct neo_options opt[] = {
 	{'!', no_argument, NULL, NULL, "show dependencies"},
 	{'+', 0, "az|de", 0},
 //	{'+', 0, "a|ade", 0}, <- bogus or-mask (always true) (recognized by mask compiler)
+//	{'+', 0, "a/bc", 0 }, <- wrong separator: or-mask format is "x|yz" 
 	{'+', 0, "|dz", 0},
 	{0, 0, 0, 0}
 };
