@@ -21,6 +21,8 @@
  * 1970's.
  */
 
+static const char cvsid[] = "$Id$";
+
 int
 mit_bitcount(unsigned int n)
 {

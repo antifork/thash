@@ -29,6 +29,8 @@
  *
  */
 
+static const char cvsid[] = "$Id$";
+
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>

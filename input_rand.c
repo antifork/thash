@@ -30,6 +30,7 @@
  *
  */
 
+static const char cvsid[] = "$Id$";
 
 #include <stdlib.h>
 #include "global.h"

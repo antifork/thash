@@ -37,15 +37,17 @@
 #include <string.h>
 #include <stdarg.h>
 
-static const char cvsid[] = "$cvsid: neo_options.c,v 1.11 2003/05/05 00:46:24 awgn Exp $";
+static const char cvsid[] = "$cvsid: neo_options.c,v 1.14 2003/05/05 16:54:29 awgn Exp $";
 static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
 
 extern char *__progname;
 
+// This control the otuput fashoin: 0 = classic, 1 = verbose
+int neo_verbose;
+
 #define   NEO_LIBRARY
 #include "neo_options.h"
-#define RSIZE	(80 bit)
-
+#define RSIZE	(112 bit)	// from 21 (!) .. up to 127 	
 
 static void fatal(char *pattern,...) __attribute__((noreturn));
 static void
@@ -58,29 +60,121 @@ fatal(char *pattern,...)
 	exit(1);
 }
 
+static int 
+warn(char *pattern,...)
+{
+	static int n=0;
+	int tmp;
+	va_list ap;
+
+	if (pattern == NULL) {	/* reset */
+		tmp= n,  n=0;
+		return (tmp);
+	}
+	n++;
+        va_start(ap, pattern);
+        vfprintf(stderr, pattern, ap);
+        va_end(ap);
+	return (n);
+}
+
 static int
-check_neo_options(struct neo_options * n)
+check_optmask(char c, char *s)
+{
+        REG reg[RSIZE], r[RSIZE], m[RSIZE];
+        int sep = 0, type=0, i;
+
+        REG_CLR(r, RSIZE);
+        REG_CLR(m, RSIZE);
+
+        if (s == NULL)
+                return 0;
+
+        for (i = 0; s[i] != 0; i++) {
+                switch (s[i]) {
+                case '|':
+                        type = OR_MASK;
+                        if (c != '+')
+                                warn("\n[+] %s: -%c opt \"%s\" mask error. wrong separator (and-mask format is \"x/xy\")",
+                                        __FUNCTION__,c,s);  /* error */
+                        if (sep != 0)
+                                warn("\n[+] %s: -%c opt \"%s\" mask parse error.", __FUNCTION__,c,s);  /* error */
+                        sep++;
+                        continue;
+                case '/':
+                        type = AND_MASK;
+                        if (c == '+')
+                                warn("\n[+] %s: -%c opt \"%s\" mask error. wrong separator (or-mask format is \"x|yz\")",
+                                        __FUNCTION__,c,s);  /* error */
+                        if (sep != 0)
+                                warn("\n[+] %s: -%c opt \"%s\" mask parse error.", __FUNCTION__,c, s);   /* error */
+                        sep++;
+                        continue;
+                default:
+                        REG_BS((sep == 0 ? r : m), (s[i] - '!'));
+                }
+        }
+
+        /* mask integrity check */
+
+        if ( type == AND_MASK ) {
+                REG_CPY(m,reg,RSIZE);
+                REG_AND(r,reg,RSIZE);
+                if (!REG_CMP(r,reg,RSIZE))
+                        warn("\n[+] %s: -%c opt \"%s\" mask error. bogus and-mask", __FUNCTION__,c, s); /* error */
+        }
+
+        if ( type == OR_MASK && !REG_ISNULL(r,RSIZE)) {
+                REG_CPY(m,reg,RSIZE);
+                REG_AND(r,reg,RSIZE);
+                if (REG_CMP(r,reg,RSIZE))
+                        warn("\n[+] %s: -%c opt \"%s\" mask error. bogus or-mask", __FUNCTION__,c,s); /* error */
+        }
+
+        return 0;
+}
+
+static int
+check_options(struct neo_options * n)
 {
 	REG reg[RSIZE];
-	REG_CLR(reg, RSIZE);
+	int gerr=0, err=0;
 
-	for (; n->opt != 0; n++)
+	REG_CLR(reg, RSIZE);
+	warn(NULL);     /* reset */
+
+	for (; n->opt != 0; n++) {
+		if ( neo_verbose) 
+			printf("    %s: check (%c) -> \"%s\" option... ",__FUNCTION__,n->opt,n->mask), fflush(stdout);
 		switch (n->opt) {
+		case '!':
 		case '-':
+			break;
 		case '+':
-			continue;
+			check_optmask(n->opt,n->mask);	
+			break;
 		default:
-			if (REG_BT(reg, (n->opt - '0')))
-				fatal("[+] %s: -%c opt error. option already in use.\n", __FUNCTION__ ,n->opt);
-			REG_BS(reg, (n->opt - '0'));
+			if (REG_BT(reg, (n->opt - '!')))
+				warn("\n[+] %s: -%c opt error. option already in use", __FUNCTION__ ,n->opt);
+			REG_BS(reg, (n->opt - '!'));
+			check_optmask(n->opt,n->mask);
 		}
+		err = warn(NULL);
+		gerr += err;
+	
+		if (neo_verbose)	
+			printf(  err ? "\n" : "ok\n");
+	}
+
+	if (gerr != 0) 
+		fatal("\n[+] %s: %d %s encontered. exit forced.\n", __FUNCTION__ ,gerr, ( gerr == 1 ? "error" : "errors" ));
+		
 	return 0;
 }
 
 static int
 compile_optmask(char c, char *s, REG r[], REG m[])
 {
-        REG reg[RSIZE];
 	int ret = 0, sep = 0, type=0, i;
 
 	REG_CLR(r, RSIZE);
@@ -93,44 +187,17 @@ compile_optmask(char c, char *s, REG r[], REG m[])
 		switch (s[i]) {
 		case '|':
 			type = OR_MASK;
-			if (c != '+')
-				fatal("[+] %s: wrong separator at \"%s\" (and-mask format is \"x/xy\").\n", 
-					__FUNCTION__,s);  /* error */
-                        if (sep != 0)
-                                fatal("[+] %s: parse error at \"%s\" (or-mask).\n", __FUNCTION__,s);  /* error */
 			sep++;
 			continue;
 		case '/':
 			type = AND_MASK;
-                        if (c == '+')
-                                fatal("[+] %s: wrong separator at \"%s\" (or-mask format is \"x|yz\").\n", 
-                                        __FUNCTION__,s);  /* error */
-			if (sep != 0)
-				fatal("[+] %s: -%c parser error at \"%s\" (and-mask).\n", __FUNCTION__,c, s);	/* error */
 			sep++;
 			continue;
 		default:
-			REG_BS((sep == 0 ? r : m), (s[i] - '0'));
+			REG_BS((sep == 0 ? r : m), (s[i] - '!'));
 			ret |= (sep == 0 ? 2 : 1);
 		}
 	}
-
-	/* mask integrity check */
-
-	if ( type == AND_MASK ) {
-		REG_CPY(m,reg,RSIZE);
-		REG_AND(r,reg,RSIZE);
-		if (!REG_CMP(r,reg,RSIZE)) 
-			fatal("[+] %s: -%c \"%s\" bogus and-mask.\n", __FUNCTION__,c, s); /* error */
-	}
-
-        if ( type == OR_MASK && !REG_ISNULL(r,RSIZE)) {
-                REG_CPY(m,reg,RSIZE);
-                REG_AND(r,reg,RSIZE);
-                if (REG_CMP(r,reg,RSIZE))
-                        fatal("[+] %s: \"%s\" bogus or-mask.\n", __FUNCTION__,s); /* error */
-        }
-
 	return (ret);
 }
 
@@ -219,12 +286,12 @@ neo_showdepend(FILE * f, struct neo_options * n)
 		case '!':
 			continue;
 		case '+':
-			if (n->depend != NULL)
-				fprintf(f, "      (or)                      \"%s\"\n", n->depend);
+			if (n->mask != NULL)
+				fprintf(f, "      (or)                      \"%s\"\n", n->mask);
 			continue;
 		default:
-			if (n->depend != NULL)
-				fprintf(f, "   -%c (and)                     \"%s\"\n", n->opt, n->depend);
+			if (n->mask != NULL)
+				fprintf(f, "   -%c (and)                     \"%s\"\n", n->opt, n->mask);
 		}
 	return 0;
 }
@@ -239,7 +306,7 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
 
 	if (optstring == NULL) {
 		/* init */
-		check_neo_options(n);
+		check_options(n);
 		optstring = compile_optstring(n);
 	}
 
@@ -251,14 +318,14 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
                                 optind=1;
                                 return (c);
                         }
-                        REG_BS(master, (c - '0'));
+                        REG_BS(master, (c - '!'));
                 }
                 optind = 1;
 		break;
 	case OPT_DELAYED:
                 c = getopt(argc, argv, optstring);
                 if (c != EOF) {
-                        REG_BS(master, (c - '0'));
+                        REG_BS(master, (c - '!'));
                         return (c);
                 }
 		break;
@@ -274,7 +341,7 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
 			/* obligation line */
 		case '+':
 			REG_CPY(master, temp, RSIZE);
-			d = compile_optmask(n->opt, n->depend, opts, mask);
+			d = compile_optmask(n->opt, n->mask, opts, mask);
 
 			switch (d) {
 			 /* NULL/NULL */ case 0:
@@ -300,25 +367,25 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
 			REG_AND(mask, temp, RSIZE);
 			if (REG_ISNULL(temp, RSIZE))
 				fatal("[!] %s: or-mask \"%s\" error. (missing options?)\n", 
-					__FUNCTION__,n->depend);
+					__FUNCTION__,n->mask);
 			continue;
 
 			/* (and) mask check */
 		default:
-			if (REG_BT(master, (n->opt - '0')) == 0)
+			if (REG_BT(master, (n->opt - '!')) == 0)
 				continue;	/* the current options wasn't
 						 * set, its optmask is
 						 * ignored */
 
 			/* be sure that the current options is set */
 			REG_CPY(master, temp, RSIZE);
-			REG_BS(temp, (n->opt - '0'));
-			compile_optmask(n->opt, n->depend, opts, mask);
+			REG_BS(temp, (n->opt - '!'));
+			compile_optmask(n->opt, n->mask, opts, mask);
 			REG_AND(mask, temp, RSIZE);
 
 			if (!REG_CMP(temp, opts, RSIZE)) /* error */
 				fatal("[!] %s: -%c and-mask \"%s\" error. (mismatch dependency?)\n", 
-					__FUNCTION__ ,n->opt, n->depend);
+					__FUNCTION__ ,n->opt, n->mask);
 			continue;
 		}
 
@@ -332,22 +399,26 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
 struct neo_options opt[] = {
 	{'-', 0, 0, NULL, "first section"},
 	{'a', no_argument, "a/ab", NULL, "test"},
-//	{'a', no_argument, "a/cb", NULL, "test"}, <- bugus and-mask (never true) (recognized by mask compiler) 
-//	{'k', no_argument, "a|cb", NULL, "test"}, <- wrong separator: and-mask format is "a/ab"
+//	{'a', no_argument, "a/ab", NULL, "test"}, // <- -a is already in use.
+//	{'m', no_argument, "a/cb", NULL, "test"}, // <- bugus and-mask (never true)  
+//	{'k', no_argument, "a|cb", NULL, "test"}, // <- wrong separator: and-mask format is "a/ab"
 	{'b', no_argument, "bc/bc", NULL, "test.."},
 	{'-', 0, 0, NULL, "second section"},
 	{'c', required_argument, "cd/cd", "int", "test..."},
 	{'d', required_argument, "d/d", "u_int", "test...."},
+//	{'l', no_argument, "a/sd/d", NULL, "---"}, // <- parse error
 	{'e', no_argument, "", NULL, "---"},
 	{'z', no_argument, "", NULL, "test....."},
 	{'h', no_argument, "", NULL, "print help"},
 	{'!', no_argument, NULL, NULL, "show dependencies"},
 	{'+', 0, "az|de", 0},
-//	{'+', 0, "a|ade", 0}, <- bogus or-mask (always true) (recognized by mask compiler)
-//	{'+', 0, "a/bc", 0 }, <- wrong separator: or-mask format is "x|yz" 
+//	{'+', 0, "a|ade", 0}, // <- bogus or-mask (always true) 
+//	{'+', 0, "a/bc", 0 }, // <- wrong separator: or-mask format is "x|yz" 
 	{'+', 0, "|dz", 0},
 	{0, 0, 0, 0}
 };
+
+
 
 int
 main(int argc, char **argv)
@@ -371,6 +442,12 @@ main(int argc, char **argv)
 //	      we implicit assume that masks check are not relevant, and neo_getopt() is 
 //	      forced to return.  
 //	       
+
+// 	neo_verbose control the output fashion: 0=normal, 1=verbose.
+//	            
+//	NOTE: a foreing module declares: extern int neo_verbose;
+//
+//	neo_verbose = 1;
 
 	printf("OPT_NOW ...\n");
 	neo_getopt(argc, argv, opt, OPT_NOW);

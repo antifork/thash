@@ -29,16 +29,16 @@
  *
  */
 
+static const char cvsid[] = "$Id$";
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <dlfcn.h>
 
 #include "config.h"
 #include "thash.h"
-
 #include "local.h"
 #include "global.h"
-
 #include "macro.h"
 #include "prototype.h"
 #include "neo_options.h"

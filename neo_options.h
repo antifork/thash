@@ -46,10 +46,11 @@ enum args {
 struct neo_options {
     int opt;
     enum args has_arg;
-    char *depend;
+    char *mask;
     char *arg;
     char *usage;
 };
+
 
 typedef unsigned char REG;
 
@@ -71,10 +72,10 @@ int neo_getopt (int , char *const[] , struct neo_options *, int);
 #define mbyte       <<20
 #define gbyte       <<30
 
-#define REG_BS(r,b)      ( r[b>>3] |=   1<<(b&7) )
-#define REG_BR(r,b)      ( r[b>>3] &= ~ 1<<(b&7) )
-#define REG_BT(r,b)      ( r[b>>3]  &   1<<(b&7) )
-#define REG_BN(r,b)      ( r[b>>3] ^=   1<<(b&7) )
+#define REG_BS(r,b)      ( r[((b)&0x7f)>>3] |=   1<<((b)&7) )
+#define REG_BR(r,b)      ( r[((b)&0x7f)>>3] &= ~ 1<<((b)&7) )
+#define REG_BT(r,b)      ( r[((b)&0x7f)>>3]  &   1<<((b)&7) )
+#define REG_BN(r,b)      ( r[((b)&0x7f)>>3] ^=   1<<((b)&7) )
 
 
 #define REG_FOREACH(len)	int i; for(i=0;i<len ;i++)
