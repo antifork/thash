@@ -220,33 +220,6 @@ insert_list (struct main_list *h, unsigned long n)
 
 }
 
-static
-#ifdef __GNUC__
-    __inline
-#endif
-    unsigned long
-xor_folding (hash, b)
-     unsigned long hash;
-     int b;
-{
-    unsigned long mask;
-    unsigned long ret;
-
-    if (b == 32)
-	return hash;
-
-    mask = (1 << b) - 1;
-    ret = 0;
-
-    while (hash) {
-	ret ^= (hash & mask);
-	hash >>= b;
-    }
-
-    return (ret);
-
-}
-
 
 int
 hash_blacklist ()
