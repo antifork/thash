@@ -46,7 +46,18 @@ AC_ARG_WITH(regsize,
 AC_REPLACE_FUNCS([strlcpy strlcat])
 
 # check for headers
-AC_CHECK_HEADERS(sys/queue.h)
+
+AH_TEMPLATE([HAVE_BSD_SYS_QUEUE_H],
+[define if the sys/queue.h BSD header is present
+])
+
+AC_CHECK_HEADERS(sys/queue.h, [AC_EGREP_CPP(have_bsd_sys_queue, [
+#include <sys/queue.h>
+#ifdef SLIST_HEAD
+  have_bsd_sys_queue
+#endif
+], AC_DEFINE([HAVE_BSD_SYS_QUEUE_H]))])    
+
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

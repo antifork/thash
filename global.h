@@ -55,6 +55,7 @@ EXTERN char *media;
 EXTERN unsigned long  bitlen;
 EXTERN unsigned long  tablen;
 EXTERN unsigned long  findhash;
+EXTERN char **environ;
 
 EXTERN tdriver drv;
 

@@ -101,7 +101,7 @@ default_settings()
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv, char **env)
 {
 
     int exit_status;
@@ -115,6 +115,8 @@ main (int argc, char **argv)
 	FATAL ("%s doesn't support --long-options.\ntype %s -h instead", argv[0], argv[0]);
 
     default_settings();
+
+    environ = env;
 
     while ((es = neo_getopt (argc, argv, opt)) != EOF)
 	switch (es) {

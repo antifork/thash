@@ -3633,6 +3633,10 @@ done
 
 # check for headers
 
+
+
+
+
 for ac_header in sys/queue.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
@@ -3741,10 +3745,29 @@ if test `eval echo '${'$as_ac_Header'}'` = yes; then
   cat >>confdefs.h <<_ACEOF
 #define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
 _ACEOF
+ cat >conftest.$ac_ext <<_ACEOF
+#line $LINENO "configure"
+#include "confdefs.h"
+
+#include <sys/queue.h>
+#ifdef SLIST_HEAD
+  have_bsd_sys_queue
+#endif
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  egrep "have_bsd_sys_queue" >/dev/null 2>&1; then
+  cat >>confdefs.h <<\_ACEOF
+#define HAVE_BSD_SYS_QUEUE_H 1
+_ACEOF
+
+fi
+rm -f conftest*
 
 fi
 
 done
+
 
 
 ac_config_files="$ac_config_files Makefile"

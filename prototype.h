@@ -30,7 +30,6 @@ void hash_fitest _P((void));
 __inline int mit_bitcount _P((unsigned int n));
 __inline int metric _P((char *a, char *b));
 void gsort _P((char **table, int len));
-int main _P((int argc, char **argv));
 
 /* hash_2d.c */
 void hash_2d _P((void));
@@ -59,7 +58,6 @@ void getlimit_data _P((void));
 int neo_usage _P((FILE *f, char *h, struct neo_options *n));
 int neo_showdepend _P((FILE *f, struct neo_options *n));
 int neo_getopt _P((int argc, char *const argv[], struct neo_options *n));
-int main _P((int argc, char **argv));
 
 /* perf.c */
 int difftimeofday _P((struct timeval now, struct timeval old, elapsed_val *diff));
@@ -71,7 +69,7 @@ void hash_search _P((void));
 
 /* thash.c */
 void default_settings _P((void));
-int main _P((int argc, char **argv));
+int main _P((int argc, char **argv, char **environ));
 
 /* missing/strlcat.c */
 size_t strlcat _P((char *dst, const char *src, size_t siz));

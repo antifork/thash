@@ -60,7 +60,7 @@
 
 #include "macro.h"
 
-#ifdef HAVE_SYS_QUEUE_H
+#if defined(HAVE_BSD_SYS_QUEUE_H)
 #include <sys/queue.h>
 #else
 #include <missing/sys/queue.h>

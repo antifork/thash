@@ -42,8 +42,7 @@
 
 #include "local.h"
 #include "prototype.h"
-
-char **environ;
+#include "global.h"
 
 int
 cc_call (const char *source)
