@@ -44,28 +44,27 @@
 #include "macro.h"
 
 void
-hash_search ()
+hash_search()
 {
-    unsigned long h;
-    int found = 0;
+	unsigned long h;
+	int found = 0;
 
-    if (drv.open (media) == -1)
-	FATAL ("open interface error!");
+	if (drv.open(media) == -1)
+		FATAL("open interface error!");
 
-    drv.reset ();
+	drv.reset();
 
-    while (drv.read (buf, 79) != NULL) {
-	h = ext_hash (buf, strlen (buf));
-
-	if (h == findhash) {
-	    PUTS ("%s (%lu)\n", buf, h);
-	    found++;
+	while (drv.read(buf, 79) != NULL) {
+		h = ext_hash(buf, strlen(buf));
+		if (h == findhash) {
+			PUTS("%s (%lu)\n", buf, h);
+			found++;
+		}
 	}
-    }
 
-    if (!found)
-	PUTS ("(%lu) not found!\n", findhash);
+	if (!found)
+		PUTS("(%lu) not found!\n", findhash);
 
-    drv.close ();
+	drv.close();
 
 }

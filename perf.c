@@ -44,69 +44,67 @@
 #include "macro.h"
 
 int
-difftimeofday (struct timeval now, struct timeval old, elapsed_val * diff)
+difftimeofday(struct timeval now, struct timeval old, elapsed_val * diff)
 {
-    register int r1;
-    register int r2;
-    register int r3;
+	register int r1;
+	register int r2;
+	register int r3;
 
-    r1 = (now.tv_usec - old.tv_usec) / 10000;
-    r2 = (now.tv_sec - old.tv_sec) % 60;
-    r3 = (now.tv_sec - old.tv_sec) / 60;
+	r1 = (now.tv_usec - old.tv_usec) / 10000;
+	r2 = (now.tv_sec - old.tv_sec) % 60;
+	r3 = (now.tv_sec - old.tv_sec) / 60;
 
-    if (r1 < 0) {
-	r1 += 100;
-	r2--;
-	if (r2 < 0) {
-	    r2 += 60;
-	    r3--;
+	if (r1 < 0) {
+		r1 += 100;
+		r2--;
+		if (r2 < 0) {
+			r2 += 60;
+			r3--;
+		}
 	}
-    }
-    diff->dec = r1;
-    diff->sec = r2;
-    diff->min = r3;
+	diff->dec = r1;
+	diff->sec = r2;
+	diff->min = r3;
 
-    return 0;
+	return 0;
 }
 
 
 void
-hash_perf ()
+hash_perf()
 {
-    struct timeval start;
-    struct timeval end;
-    elapsed_val diff;
-    unsigned long h;
-    double r;
-    double d;
+	struct timeval start;
+	struct timeval end;
+	elapsed_val diff;
+	unsigned long h;
+	double r;
+	double d;
 
-    if (drv.open (media) == -1)
-	FATAL ("open interface error!");
+	if (drv.open(media) == -1)
+		FATAL("open interface error!");
 
-    gettimeofday (&start, NULL);
+	gettimeofday(&start, NULL);
+	drv.reset();
 
-    drv.reset ();
+	/* processing the dictionary */
 
-    /* processing the dictionary */
+	while (drv.read(buf, 79) != NULL) {
 
-    while (drv.read (buf, 79) != NULL) {
+		h = (unsigned long) ext_hash(buf, strlen(buf));
 
-	h = (unsigned long) ext_hash (buf, strlen (buf));
+	}
 
-    }
+	gettimeofday(&end, NULL);
+	difftimeofday(end, start, &diff);
 
-    gettimeofday (&end, NULL);
+	d = (double) (end.tv_sec - start.tv_sec) + (double) (end.tv_usec - start.tv_usec) / 1000000;
+	r = (d ? (double) drv.w_read / d : 999999999);
 
-    difftimeofday (end, start, &diff);
+	PUTS("overal_time         : %02d:%02d,%02d\n", diff.min, diff.sec, diff.dec);
+	PUTS("megahash/sec        : %g\n", r / 1000000);
 
-    d = (double) (end.tv_sec - start.tv_sec) + (double) (end.tv_usec - start.tv_usec) / 1000000;
-    r = (d ? (double) drv.w_read / d : 999999999);
+	drv.close();
 
-    PUTS ("overal_time         : %02d:%02d,%02d\n", diff.min, diff.sec, diff.dec);
-    PUTS ("megahash/sec        : %g\n", r / 1000000);
-
-    drv.close ();
-
-    return;
+	return;
 
 }

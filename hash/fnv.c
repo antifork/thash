@@ -64,15 +64,15 @@
 #define FNV32_init  2166136261UL
 
 unsigned long
-hash (char *p, int s)
+hash(char *p, int s)
 {
-    static unsigned long h = FNV32_init;
-    int i = 0;
+	static unsigned long h = FNV32_init;
+	int i = 0;
 
-    for (; i < s; i++) {
-	h = h * FNV32_prime;
-	h = h ^ p[i];
-    }
+	for (; i < s; i++) {
+		h = h * FNV32_prime;
+		h = h ^ p[i];
+	}
 
-    return h;
+	return h;
 }

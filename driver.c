@@ -39,56 +39,56 @@
 #include "thash.h"
 #include "macro.h"
 
-int openw (char *);
-int openr (char *);
-int openi (char *);
-int openg (char *);
+int openw(char *);
+int openr(char *);
+int openi(char *);
+int openg(char *);
 
-char *readw (char *, int);
-char *readr (char *, int);
-char *readr64 (char *, int);
-char *readi (char *, int);
-char *readg (char *, int);
+char *readw(char *, int);
+char *readr(char *, int);
+char *readr64(char *, int);
+char *readi(char *, int);
+char *readg(char *, int);
 
-int resetw ();
-int resetr ();
-int reseti ();
-int resetg ();
+int resetw();
+int resetr();
+int reseti();
+int resetg();
 
-int closew ();
-int closer ();
-int closei ();
-int closeg ();
+int closew();
+int closer();
+int closei();
+int closeg();
 
 int
-setup_driver ()
+setup_driver()
 {
 
-    switch (opt_input) {
-     case OPT_WORDLIST:
-	 PUTS ("drv:input method    : wordlist\n");
-	 drv.open = openw;
-	 drv.read = readw;
-	 drv.reset = resetw;
-	 drv.close = closew;
-	 break;
-     case OPT_RAND:
-	 PUTS ("drv:input method    : ISAAC random geneator\n");
-	 drv.open = openr;
-	 drv.read = (opt_options & OPT_RADIX64 ? readr64 : readr);
-	 drv.reset = resetr;
-	 drv.close = closer;
-	 break;
-     case OPT_GRAY:
-	 PUTS ("drv:input method    : gray sequence\n");
-	 drv.open = NULL;
-	 drv.read = NULL;
-	 drv.reset = NULL;
-	 drv.close = NULL;
-	 break;
-     default:
-	 FATAL ("unknown device");
-    }
+	switch (opt_input) {
+	case OPT_WORDLIST:
+		PUTS("drv:input method    : wordlist\n");
+		drv.open = openw;
+		drv.read = readw;
+		drv.reset = resetw;
+		drv.close = closew;
+		break;
+	case OPT_RAND:
+		PUTS("drv:input method    : ISAAC random geneator\n");
+		drv.open = openr;
+		drv.read = (opt_options & OPT_RADIX64 ? readr64 : readr);
+		drv.reset = resetr;
+		drv.close = closer;
+		break;
+	case OPT_GRAY:
+		PUTS("drv:input method    : gray sequence\n");
+		drv.open = NULL;
+		drv.read = NULL;
+		drv.reset = NULL;
+		drv.close = NULL;
+		break;
+	default:
+		FATAL("unknown device");
+	}
 
-    return 0;
+	return 0;
 }

@@ -59,73 +59,73 @@ unsigned int col;
 unsigned int fc;
 
 void
-hash_fitest ()
+hash_fitest()
 {
 
-    unsigned long h;
-    int *table;
-    int i;
-    int j;
+	unsigned long h;
+	int *t;
+	int i;
+	int j;
 
-    min = UINT_MAX;
-    i = 0;
-    j = 0;
+	min = UINT_MAX;
+	i = 0;
+	j = 0;
 
+	if (drv.open(media) == -1)
+		FATAL("open interface error!");
 
-    if (drv.open (media) == -1)
-	FATAL ("open interface error!");
+	drv.reset();
 
-    drv.reset ();
+	t = (int *) calloc(tablen, sizeof(int));
 
-    table = (int *) calloc (tablen, sizeof (int));
+	while (drv.read(buf, 79) != NULL) {
 
-    while (drv.read (buf, 79) != NULL) {
-	h = hash.drv (buf);
+		h = hash.drv(buf);
 
-	if (table[h])
-	    col++;
+		if (t[h])
+			col++;
 
-	if ((fc == 0) && table[h])
-	    fc = j;
+		if ((fc == 0) && t[h])
+			fc = j;
 
-	table[h]++;
+		t[h]++;
 
-	j++;
+		j++;
 
-    }
+	}
 
-    drv.close ();
+	drv.close();
 
-    for (i = 0; i < tablen; i++) {
-	min = MIN (min, table[i]);
-	max = MAX (max, table[i]);
-	sum += table[i];
-    }
+	for (i = 0; i < tablen; i++) {
+		min = MIN(min, t[i]);
+		max = MAX(max, t[i]);
+		sum += t[i];
+	}
 
-    mean = (double) sum / tablen;
+	mean = (double) sum / tablen;
 
-    for (i = 0; i < tablen; i++) {
-	var += (double) (table[i] - mean) * (table[i] - mean);
-	chi2 += pow ((table[i] - mean), 2) / mean;
-	cross += table[i] * log (table[i] + 1);
-    }
+	for (i = 0; i < tablen; i++) {
+		var += (double) (t[i] - mean) * (t[i] - mean);
+		chi2 += pow((t[i] - mean), 2) / mean;
+		cross += t[i] * log(t[i] + 1);
+	}
 
-    var /= tablen;
-    expect = (double) col / tablen;
-    cross /= sum;
+	var /= tablen;
+	expect = (double) col / tablen;
+	cross /= sum;
 
-    free (table);
+	free(t);
 
-    PUTS ("total collision     : %d\n", col);
-    PUTS ("first collision     : %d\n", fc);
-    PUTS ("mean collision      : %f\n", expect);
-    PUTS ("mean                : %f\n", mean);
-    PUTS ("standard dev.       : %f\n", sqrt (var));
-    PUTS ("min                 : %d\n", min);
-    PUTS ("max                 : %d\n", max);
-    PUTS ("cross               : %f\n", cross);
-    PUTS ("expected            : %lu\n", tablen);
-    PUTS ("chi2                : %f\n", chi2);
+	PUTS("total collision     : %d\n", col);
+	PUTS("first collision     : %d\n", fc);
+	PUTS("mean collision      : %f\n", expect);
+	PUTS("mean                : %f\n", mean);
+	PUTS("standard dev.       : %f\n", sqrt(var));
+	PUTS("min                 : %d\n", min);
+	PUTS("max                 : %d\n", max);
+	PUTS("cross               : %f\n", cross);
+	PUTS("expected            : %lu\n", tablen);
+	PUTS("chi2                : %f\n", chi2);
 
-    return;
+	return;
 }

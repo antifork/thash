@@ -47,11 +47,11 @@
 
 
 void
-getlimit_data ()
+getlimit_data()
 {
-    struct rlimit me;
+	struct rlimit me;
 
-    getrlimit (RLIMIT_DATA, &me);
-    rlimit_data = me.rlim_cur;
+	getrlimit(RLIMIT_DATA, &me);
+	rlimit_data = me.rlim_cur;
 
 }

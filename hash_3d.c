@@ -52,41 +52,36 @@
 
 
 void
-hash_3d ()
+hash_3d()
 {
-    unsigned long h,
-        x,
-        y,
-        z;
-    static unsigned long sh;
+	unsigned long h, x, y, z;
+	static unsigned long sh;
 
 
-    if (drv.open (media) == -1)
-	FATAL ("open interface error!");
+	if (drv.open(media) == -1)
+		FATAL("open interface error!");
 
-    drv.reset ();
+	drv.reset();
 
-    while (drv.read (buf, 79) != NULL) {
+	while (drv.read(buf, 79) != NULL) {
 
-	h = ext_hash (buf, strlen (buf));
+		h = ext_hash(buf, strlen(buf));
 
-	if (opt_options & OPT_DIFF) {
-	    x = ((h - sh) & X_MASK);
-	    y = ((h - sh) & Y_MASK) >> 11;
-	    z = ((h - sh) & Z_MASK) >> 22;
-	    sh = h;
+		if (opt_options & OPT_DIFF) {
+			x = ((h - sh) & X_MASK);
+			y = ((h - sh) & Y_MASK) >> 11;
+			z = ((h - sh) & Z_MASK) >> 22;
+			sh = h;
+
+		} else {
+			x = (h & X_MASK);
+			y = (h & Y_MASK) >> 11;
+			z = (h & Z_MASK) >> 22;
+		}
+
+		printf("%lu %lu %lu\n", x, y, z);
 
 	}
-	else {
-	    x = (h & X_MASK);
-	    y = (h & Y_MASK) >> 11;
-	    z = (h & Z_MASK) >> 22;
-	}
 
-	printf ("%lu %lu %lu\n", x, y, z);
-
-    }
-
-    drv.close ();
-
+	drv.close();
 }

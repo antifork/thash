@@ -30,7 +30,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 static char *rcsid = "$OpenBSD: strlcpy.c,v 1.2 1998/11/06 04:33:16 wvdputte Exp $";
-#endif /* LIBC_SCCS and not lint */
+#endif				/* LIBC_SCCS and not lint */
 
 #include <sys/types.h>
 #include <string.h>
@@ -41,25 +41,25 @@ static char *rcsid = "$OpenBSD: strlcpy.c,v 1.2 1998/11/06 04:33:16 wvdputte Exp
  * Returns strlen(src); if retval >= siz, truncation occurred.
  */
 size_t
-strlcpy (dst, src, siz)
-     char *dst;
-     const char *src;
-     size_t siz;
+strlcpy(dst, src, siz)
+	char *dst;
+	const char *src;
+	size_t siz;
 {
-    register char *d = dst;
-    register const char *s = src;
-    register size_t n = siz;
+	register char *d = dst;
+	register const char *s = src;
+	register size_t n = siz;
 
-    if (n == 0)
-	return (strlen (s));
-    while (*s != '\0') {
-	if (n != 1) {
-	    *d++ = *s;
-	    n--;
+	if (n == 0)
+		return (strlen(s));
+	while (*s != '\0') {
+		if (n != 1) {
+			*d++ = *s;
+			n--;
+		}
+		s++;
 	}
-	s++;
-    }
-    *d = '\0';
+	*d = '\0';
 
-    return (s - src);		/* count does not include NUL */
+	return (s - src);	/* count does not include NUL */
 }

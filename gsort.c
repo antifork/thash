@@ -44,12 +44,12 @@ char buf[80];
 
 /*
  * MIT Bitcount
- * 
+ *
  * Consider a 3 bit number as being 4a+2b+c if we shift it right 1 bit, we have
  * 2a+b subtracting this from the original gives 2a+b+c if we shift the
  * original 2 bits right we get a and so with another subtraction we have
  * a+b+c which is the number of bits in the original number.
- * 
+ *
  * Suitable masking  allows the sums of  the octal digits  in a 32 bit  number
  * to appear in  each octal digit.  This  isn't much help  unless we can get
  * all of them summed together.   This can be done by modulo  arithmetic (sum
@@ -60,7 +60,7 @@ char buf[80];
  * together to  get base64 digits,  and use modulo 63.   (Those of you  with
  * 64  bit machines need  to add 3  octal digits together to get base512
  * digits, and use mod 511.)
- * 
+ *
  * This is HACKMEM 169, as used in X11 sources. Source: MIT AI Lab memo, late
  * 1970's.
  */
@@ -68,45 +68,45 @@ char buf[80];
 #ifdef __GNUC__
 __inline
 #endif
-    int
-mit_bitcount (unsigned int n)
+int
+mit_bitcount(unsigned int n)
 {
-    /* works for 32-bit numbers only */
-    register unsigned int tmp;
+	/* works for 32-bit numbers only */
+	register unsigned int tmp;
 
-    tmp = n - ((n >> 1) & 033333333333) - ((n >> 2) & 011111111111);
-    return ((tmp + (tmp >> 3)) & 030707070707) % 63;
+	tmp = n - ((n >> 1) & 033333333333) - ((n >> 2) & 011111111111);
+	return ((tmp + (tmp >> 3)) & 030707070707) % 63;
 }
 
 #ifdef __GNUC__
 __inline
 #endif
-    int
-metric (a, b)
-     char *a;
-     char *b;
+int
+metric(a, b)
+	char *a;
+	char *b;
 {
-    register unsigned int ret;
-    register int *i = (int *) buf;
-    register char *r;
+	register unsigned int ret;
+	register int *i = (int *) buf;
+	register char *r;
 
-    memset (buf, 0, 80);
+	memset(buf, 0, 80);
 
-    ret = 0;
+	ret = 0;
 
-    r = buf;
-    while ((*r++ = *a))
-	a++;
+	r = buf;
+	while ((*r++ = *a))
+		a++;
 
-    r = buf;
-    while (*r++ ^= *b)
-	b++;
+	r = buf;
+	while (*r++ ^= *b)
+		b++;
 
-    for (; *i != 0; i++) {
-	ret = mit_bitcount (*i);
-    }
+	for (; *i != 0; i++) {
+		ret = mit_bitcount(*i);
+	}
 
-    return ret;
+	return ret;
 
 }
 
@@ -114,142 +114,136 @@ char *stream;
 int line;
 
 void
-gsort (char **table, int len)
+gsort(char **table, int len)
 {
-    register int distance;
-    register int newdist;
-    char *tmp;
-    int i;
-    int j;
+	register int distance;
+	register int newdist;
+	char *tmp;
+	int i;
+	int j;
 
-    distance = 0;
-    newdist = 0;
+	distance = 0;
+	newdist = 0;
 
-    for (i = 0; i < line - 2; i++) {
+	for (i = 0; i < line - 2; i++) {
 
-	fprintf (stderr, "step # %d/%d (%d%%)\r", i, line - 2, i * 100 / line);
+		fprintf(stderr, "step # %d/%d (%d%%)\r", i, line - 2, i * 100 / line);
 
-	distance = metric (table[i], table[i + 1]);
+		distance = metric(table[i], table[i + 1]);
 
-	for (j = i + 2; j < line; j++) {
+		for (j = i + 2; j < line; j++) {
 
-	    newdist = metric (table[i], table[j]);
+			newdist = metric(table[i], table[j]);
 
-	    if (distance > newdist) {
-		tmp = table[i + 1];
-		table[i + 1] = table[j];
-		table[j] = tmp;
-		distance = newdist;
-	    }
+			if (distance > newdist) {
+				tmp = table[i + 1];
+				table[i + 1] = table[j];
+				table[j] = tmp;
+				distance = newdist;
+			}
+		}
 
 	}
 
-    }
-
-    return;
+	return;
 }
 
 int
-word_counter (char *p)
+word_counter(char *p)
 {
-    int ret = 0;
+	int ret = 0;
 
-    for (; *p != '\0'; p++)
-	switch (*p) {
-	 case '\n':
-	 case ' ':
-	     ret++;
-	     break;
-	}
+	for (; *p != '\0'; p++)
+		switch (*p) {
+		case '\n':
+		case ' ':
+			ret++;
+			break;
+		}
 
-    return ret;
+	return ret;
 
 }
 
 
 char *
-readw (char *dst, int size)
+readw(char *dst, int size)
 {
 
-    char *p = stream;
-    char *s = dst;
+	char *p = stream;
+	char *s = dst;
 
-    int i = 0;
+	int i = 0;
 
-    if (p == NULL)
-	return NULL;
+	if (p == NULL)
+		return NULL;
 
-    if (*p == 0)
-	return NULL;		/* EOF */
+	if (*p == 0)
+		return NULL;	/* EOF */
 
-    while (*p != '\0' && *p != '\n' && i < size) {
-	*(s++) = *(p++);
-	i++;
+	while (*p != '\0' && *p != '\n' && i < size) {
+		*(s++) = *(p++);
+		i++;
 
-    }
+	}
 
-    if (*p == '\0' || *p == '\n') {
-	*s = 0;
-	i++;
-    }
+	if (*p == '\0' || *p == '\n') {
+		*s = 0;
+		i++;
+	}
+	stream += i;
 
-    stream += i;
-
-    return dst;
+	return dst;
 
 }
 
 char buf[80];
 
 int
-main (int argc, char **argv)
+main(int argc, char **argv)
 {
-    struct stat f_stat;
-    void *image;
-    char **table;
+	struct stat f_stat;
+	void *image;
+	char **table;
 
-    int size;
-    int fd;
-    int i;
+	int size;
+	int fd;
+	int i;
 
-    if (argc == 1) {
-	printf ("%s <dictionary>\n", argv[0]);
-	exit (0);
-    }
+	if (argc == 1) {
+		printf("%s <dictionary>\n", argv[0]);
+		exit(0);
+	}
+	if (stat(argv[1], &f_stat) == -1) {
+		fprintf(stderr, "open_fi::stat(%s) %s\n", argv[1], strerror(errno));
+		return -1;
+	}
+	size = (int) f_stat.st_size;
 
-    if (stat (argv[1], &f_stat) == -1) {
-	fprintf (stderr, "open_fi::stat(%s) %s\n", argv[1], strerror (errno));
-	return -1;
-    }
+	if ((fd = open(argv[1], O_RDONLY)) == -1) {
+		fprintf(stderr, "open_fi::open(%s) %s\n", argv[1], strerror(errno));
+		exit(1);
+	}
+	stream = image = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
 
-    size = (int) f_stat.st_size;
+	if (image == MAP_FAILED) {
+		fprintf(stderr, "open_fi::mmap\n");
+		exit(1);
+	}
+	line = word_counter(image);
+	table = (char **) calloc(line, sizeof(char *));
+	i = 0;
 
-    if ((fd = open (argv[1], O_RDONLY)) == -1) {
-	fprintf (stderr, "open_fi::open(%s) %s\n", argv[1], strerror (errno));
-	exit (1);
-    }
+	while (readw(buf, 79) != NULL) {
+		table[i] = strdup(buf);
+		i++;
+	}
 
-    stream = image = mmap (NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+	gsort(table, line);
 
-    if (image == MAP_FAILED) {
-	fprintf (stderr, "open_fi::mmap\n");
-	exit (1);
-    }
+	for (i = 0; i < line; i++)
+		printf("%d %s\n", i, table[i]);
 
-    line = word_counter (image);
-    table = (char **) calloc (line, sizeof (char *));
-    i = 0;
-
-    while (readw (buf, 79) != NULL) {
-	table[i] = strdup (buf);
-	i++;
-    }
-
-    gsort (table, line);
-
-    for (i = 0; i < line; i++)
-	printf ("%d %s\n", i, table[i]);
-
-    exit (1);
+	exit(1);
 
 }

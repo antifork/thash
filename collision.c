@@ -48,71 +48,71 @@
 #include "macro.h"
 
 int
-hash_collision ()
+hash_collision()
 {
-    unsigned char *p;
-    unsigned long h;
-    unsigned long col;
-    unsigned long total_len;
-    unsigned long segment_len;
-    unsigned long bitmask;
-    int i;
+	unsigned char *p;
+	unsigned long h;
+	unsigned long col;
+	unsigned long total_len;
+	unsigned long segment_len;
+	unsigned long bitmask;
+	int i;
 
-    if (drv.open (media) == -1)
-	FATAL ("open interface error!");
+	if (drv.open(media) == -1)
+		FATAL("open interface error!");
 
-    col = 0;
-    bitmask = (bitlen == 32 ? -1 : (1 << bitlen) - 1);
-    total_len = ((bitlen > 23) ? 1 << (bitlen - 23) : 1);
+	col = 0;
+	bitmask = (bitlen == 32 ? -1 : (1 << bitlen) - 1);
+	total_len = ((bitlen > 23) ? 1 << (bitlen - 23) : 1);
 
-    segment_len = MIN (regsize, total_len);
+	segment_len = MIN(regsize, total_len);
 
-    if (rlimit_data != RLIM_INFINITY)
-	segment_len = MIN (rlimit_data >> 21, segment_len);	/* half size of
-								 * rlimit_data or
-								 * regsize */
-    do {
-	p = malloc (segment_len Mbyte);
-    }
-    while (p == NULL && (segment_len >>= 1));
+	if (rlimit_data != RLIM_INFINITY)
+		segment_len = MIN(rlimit_data >> 21, segment_len);	/* half size of
+									 * rlimit_data or
+									 * regsize */
+	do {
+		p = malloc(segment_len Mbyte);
+	}
+	while (p == NULL && (segment_len >>= 1));
 
-    if (p == NULL)
-	FATAL ("malloc() irrecoverable error");
+	if (p == NULL)
+		FATAL("malloc() irrecoverable error");
 
-    PUTS ("global register-size: %lu Mbyte (required for %lu-bit mask)\n", total_len, bitlen);
-    PUTS ("segment-size        : %lu Mbyte\n", segment_len);
-    PUTS ("bitlen              : %lu\n", bitlen);
-    PUTS ("hash-bitmask        : 0x%lx\n", bitmask);
+	PUTS("global register-size: %lu Mbyte (required for %lu-bit mask)\n", total_len, bitlen);
+	PUTS("segment-size        : %lu Mbyte\n", segment_len);
+	PUTS("bitlen              : %lu\n", bitlen);
+	PUTS("hash-bitmask        : 0x%lx\n", bitmask);
 
-    for (i = 0; i < MAX (total_len / segment_len, 1); i++) {
+	for (i = 0; i < MAX(total_len / segment_len, 1); i++) {
 
-	PUTS ("step # %d/%d   \r", i + 1, (int) (total_len / segment_len));
+		PUTS("step # %d/%d   \r", i + 1, (int) (total_len / segment_len));
 
-	memset (p, 0, segment_len Mbyte);
-	drv.reset ();		/* resetting interface */
+		memset(p, 0, segment_len Mbyte);
+		drv.reset();	/* resetting interface */
 
-	/* processing the dictionary */
+		/* processing the dictionary */
 
-	while (drv.read (buf, 79) != NULL) {
+		while (drv.read(buf, 79) != NULL) {
 
-	    h = hash.drv (buf);
+			h = hash.drv(buf);
 
-	    if (CHECK_BOUND (i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
-		if TST_BIT
-		    (p, i * (segment_len Mbyte) + 1, h) col++;
+			if (CHECK_BOUND(i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
+				if TST_BIT
+					(p, i * (segment_len Mbyte) + 1, h) col++;
 
-		SET_BIT (p, i * (segment_len Mbyte) + 1, h);
-	    }
+				SET_BIT(p, i * (segment_len Mbyte) + 1, h);
+			}
+		}
+
+		/* NEXT */
 	}
 
-	/* NEXT */
-    }
+	free(p);
+	drv.close();		/* close input interface */
 
-    free (p);
-    drv.close ();		/* close input interface */
+	PUTS("total collisions    : %lu/%d\n", col, drv.w_max);
 
-    PUTS ("total collisions    : %lu/%d\n", col, drv.w_max);
-
-    return (col);
+	return (col);
 
 }

@@ -39,103 +39,104 @@
 #include "macro.h"
 
 unsigned long
-__hash_pure (char *h)
+__hash_pure(char *h)
 {
-    return (HASH (h));
+	return (HASH(h));
 }
 
 
 unsigned long
-__hash_mask (char *h)
+__hash_mask(char *h)
 {
-    return (HASH (h) & hash.mask);
+	return (HASH(h) & hash.mask);
 }
 
 
 unsigned long
-__hash_xor_folding (char *h)
+__hash_xor_folding(char *h)
 {
-    unsigned long hh;
-    unsigned long ret;
+	unsigned long hh;
+	unsigned long ret;
 
-    if (hash.len == 32)
-	return (HASH (h));
+	if (hash.len == 32)
+		return (HASH(h));
 
-    hh = HASH (h);
-    ret = 0;
+	hh = HASH(h);
+	ret = 0;
 
-    while (hh) {
-	ret ^= (hh & hash.mask);
-	hh >>= hash.len;
-    }
+	while (hh) {
+		ret ^= (hh & hash.mask);
+		hh >>= hash.len;
+	}
 
-    return (ret);
+	return (ret);
 
 }
 
 unsigned long
-__hash_dumb_mod (char *h)
+__hash_dumb_mod(char *h)
 {
-    return (HASH (h) % hash.len);
+	return (HASH(h) % hash.len);
 }
 
 
 #define FNV_32_PRIME            16777619
 #define FNV_32_INIT             (0x811c9dc5)
-#define MAX_32BIT               ((unsigned int)0xffffffff)	/* largest 32 bit unsigned value */
+#define MAX_32BIT               ((unsigned int)0xffffffff)	/* largest 32 bit
+								 * unsigned value */
 #define RETRY_LEVEL             ((MAX_32BIT / hash.len) * hash.len)
 
 unsigned long
-__hash_retry (char *h)
+__hash_retry(char *h)
 {
-    unsigned long hh;
+	unsigned long hh;
 
-    hh = HASH (h);
+	hh = HASH(h);
 
-    while (hh > RETRY_LEVEL) {
-	hh = (hh * FNV_32_PRIME) + FNV_32_INIT;
-    }
+	while (hh > RETRY_LEVEL) {
+		hh = (hh * FNV_32_PRIME) + FNV_32_INIT;
+	}
 
-    hh %= hash.len;
+	hh %= hash.len;
 
-    return (hh);
-
+	return (hh);
 }
 
 
 int
-setup_hdriver ()
+setup_hdriver()
 {
 
-    switch (opt_filters) {
-     case 0:
-         hash.drv = __hash_pure;
-         break;
-     case OPT_MASK:
-	 PUTS ("drv:hash method     : mask\n");
-	 hash.drv = __hash_mask;
-	 hash.len = bitlen;
-	 hash.mask = (1 << bitlen) - 1;
-	 break;
-     case OPT_XOR:
-	 PUTS ("drv:hash method     : xor-folding\n");
-	 hash.drv = __hash_xor_folding;
-	 hash.len = bitlen;
-	 hash.mask = (1 << bitlen) - 1;
-	 break;
-     case OPT_MOD:
-	 PUTS ("drv:hash method     : lazy mod mapping\n");
-	 hash.drv = __hash_dumb_mod;
-	 hash.len = tablen;
-	 break;
-     case OPT_RETRY:
-	 PUTS ("drv:hash method     : fnv-retry\n");
-	 hash.drv = __hash_retry;
-	 hash.len = tablen;
-	 break;
-     default:
-	 FATAL ("unknown hash method");
-    }
+	switch (opt_filters) {
 
-    return 0;
+		case 0:
+		hash.drv = __hash_pure;
+		break;
+	case OPT_MASK:
+		PUTS("drv:hash method     : mask\n");
+		hash.drv = __hash_mask;
+		hash.len = bitlen;
+		hash.mask = (1 << bitlen) - 1;
+		break;
+	case OPT_XOR:
+		PUTS("drv:hash method     : xor-folding\n");
+		hash.drv = __hash_xor_folding;
+		hash.len = bitlen;
+		hash.mask = (1 << bitlen) - 1;
+		break;
+	case OPT_MOD:
+		PUTS("drv:hash method     : lazy mod mapping\n");
+		hash.drv = __hash_dumb_mod;
+		hash.len = tablen;
+		break;
+	case OPT_RETRY:
+		PUTS("drv:hash method     : fnv-retry\n");
+		hash.drv = __hash_retry;
+		hash.len = tablen;
+		break;
+	default:
+		FATAL("unknown hash method");
+	}
+
+	return 0;
 }
