@@ -31,12 +31,13 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
-
-#include "input_wordlist.h"
+#include <errno.h>
+#include <unistd.h>
 
 
 char buf[80];
@@ -102,16 +103,15 @@ metric (a, b)
 	b++;
 
     for (; *i != 0; i++) {
-	ret += mit_bitcount (*i);
+	ret = mit_bitcount (*i);
     }
 
     return ret;
 
 }
 
-
+char *stream;
 int line;
-
 
 void
 gsort (char **table, int len)
@@ -149,41 +149,106 @@ gsort (char **table, int len)
     return;
 }
 
+int
+word_counter (char *p)
+{
+    int ret = 0;
+
+    for (; *p != '\0'; p++)
+	switch (*p) {
+	 case '\n':
+	 case ' ':
+	     ret++;
+	     break;
+	}
+
+    return ret;
+
+}
+
+
+char *
+readw (char *dst, int size)
+{
+
+    char *p = stream;
+    char *s = dst;
+
+    int i = 0;
+
+    if (p == NULL)
+	return NULL;
+
+    if (*p == 0)
+	return NULL;		/* EOF */
+
+    while (*p != '\0' && *p != '\n' && i < size) {
+	*(s++) = *(p++);
+	i++;
+
+    }
+
+    if (*p == '\0' || *p == '\n') {
+	*s = 0;
+	i++;
+    }
+
+    stream += i;
+
+    return dst;
+
+}
+
+char buf[80];
 
 int
 main (int argc, char **argv)
 {
+    struct stat f_stat;
+    void *image;
     char **table;
+
+    int size;
+    int fd;
     int i;
-    fi  fd;
 
     if (argc == 1) {
-	printf ("%s dictionary\n", argv[0]);
+	printf ("%s <dictionary>\n", argv[0]);
 	exit (0);
     }
 
-    if ((fd = open_fi (argv[1], O_RDONLY)) == -1)
-	exit (1);
-
-    line = info_fi (fd, INFO_LINE);
-
-    table = (char **) calloc (line, sizeof (char *));
-
-    fprintf (stderr, "loading table: ");
-    fflush (stderr);
-
-    for (i = 0; i < line; i++) {
-	table[i] = (char *) strdup (fgets_fi (buf, 79, fd));
+    if (stat (argv[1], &f_stat) == -1) {
+	fprintf (stderr, "open_fi::stat(%s) %s\n", argv[1], strerror (errno));
+	return -1;
     }
 
-    fprintf (stderr, "done\n");
-    fprintf (stderr, "sorting a gray-dictionary...\n");
+    size = (int) f_stat.st_size;
+
+    if ((fd = open (argv[1], O_RDONLY)) == -1) {
+	fprintf (stderr, "open_fi::open(%s) %s\n", argv[1], strerror (errno));
+	exit (1);
+    }
+
+    stream = image = mmap (NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+
+    if (image == MAP_FAILED) {
+	fprintf (stderr, "open_fi::mmap\n");
+	exit (1);
+    }
+
+    line = word_counter (image);
+    table = (char **) calloc (line, sizeof (char *));
+    i = 0;
+
+    while (readw (buf, 79) != NULL) {
+	table[i] = strdup (buf);
+	i++;
+    }
 
     gsort (table, line);
-    fprintf (stderr, "done\n");
 
     for (i = 0; i < line; i++)
-	fprintf (stdout, "%s\n", table[i]);
+	printf ("%d %s\n", i, table[i]);
 
     exit (1);
 

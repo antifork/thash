@@ -28,7 +28,7 @@
 #
 
 CC          = @CC@
-CFLAGS      = -Wall @CFLAGS@ #-march=i686 
+CFLAGS      = -g -Wall @CFLAGS@ #-march=i686 
 INCLS       = -I. @INCLS@ # -include /usr/include/almepro.h
 LDFLAGS     = @LDFLAGS@
 LIBS        = @LIBS@ # -lalmepro 
@@ -49,13 +49,13 @@ OBJS =  thash.o driver.o rand.o input_wordlist.o input_rand.o dlibrary.o limit.o
 
 GSORT =	gsort.o input_wordlist.o
 
-all:  global  
+all:  global gsort 
 
 global: local.h $(OBJS) 
 	$(CC) -o thash $(OBJS) $(LIBS)
 
 gsort:  $(GSORT)
-	$(CC) -o gsort input_wordlist.o gsort.o $(LIBS)
+	$(CC) -o gsort gsort.o $(LIBS)
 
 local.o: local.h
 
