@@ -66,7 +66,7 @@
 unsigned long
 hash(char *p, int s)
 {
-	static unsigned long h = FNV32_init;
+	unsigned long h = FNV32_init;
 	int i = 0;
 
 	for (; i < s; i++) {

@@ -225,7 +225,7 @@ main(int argc, char **argv, char **env)
 	argv += optind;
 
 	/* bitlen test */
-	bitlen = ((bitlen <= 32) ? bitlen : 32);
+	bitlen = ((bitlen <= 32 && bitlen ) ? bitlen : 32);
 
 	/* getting rlimit */
 	getlimit_data();

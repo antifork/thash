@@ -32,12 +32,12 @@
 /*
  * structures:
  *
- * ,------,      ,------, 
- * | hash |----->| hash |---> 
- * `---+--'      `---+--' 
- *     |             `---------------. 
- *     `,------,   ,------,           \------,   ,------, 
- *      | word |-->| word |--> NULL   | word |-->| word |-- ... 
+ * ,------,      ,------,
+ * | hash |----->| hash |--->
+ * `---+--'      `---+--'
+ *     |             `---------------.
+ *     `,------,   ,------,           \------,   ,------,
+ *      | word |-->| word |--> NULL   | word |-->| word |-- ...
  *      `------'   `------'           `------'   `------'
  *
  */
@@ -254,7 +254,6 @@ hash_blacklist()
 	if (p == NULL)
 		FATAL("malloc() irrecoverable error");
 
-
 	PUTS("global register-size: %lu Mbyte (required for %lu-bit mask)\n", total_len, bitlen);
 	PUTS("segment-size        : %lu Mbyte\n", segment_len);
 	PUTS("bitlen              : %lu\n", bitlen);
@@ -270,48 +269,34 @@ hash_blacklist()
 		fprintf(stderr, "step # %d/%d\n", i + 1, (int) (total_len / segment_len));
 
 		/* processing the dictionary */
-
 		while (drv.read(buf, 79) != NULL) {
 
 			h = hash.drv(buf);
-
 			if (CHECK_BOUND(i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 
 				if TST_BIT
 					(p, i * (segment_len Mbyte) + 1, h) {
-
 					/* collision detected */
 
 					col++;
 					segcol++;
-
 					insert_list(&head, h);
-
 					}
-
 				SET_BIT(p, i * (segment_len Mbyte) + 1, h);
-
 			}
 		}
-
 
 		if (segcol == 0)
 			continue;
 
 		/* extracting colliding words .. */
-
 		memset(p, 0, segment_len Mbyte);
-
 		TAILQ_FOREACH(n1, &head, entries) {
 			SET_BIT(p, i * (segment_len Mbyte) + 1, n1->hash);
 		}
-
 		drv.reset();
-
 		while (drv.read(buf, 79) != NULL) {
-
 			h = hash.drv(buf);
-
 			if (CHECK_BOUND(i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 				if TST_BIT
 					(p, i * (segment_len Mbyte) + 1, h) {
@@ -323,14 +308,11 @@ hash_blacklist()
 
 		print_list(&head);
 		free_list(&head);
-
 		/* NEXT */
-
 	}
 
 	free(p);
 	drv.close();
-
 	fprintf(stderr, "total collisions    : %lu/%d\n", col, drv.w_max);
 
 	return (col);

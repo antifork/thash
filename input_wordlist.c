@@ -76,7 +76,6 @@ openw(const char *pathname)
 				drv.w_max++;
 	}
 	return 0;
-
 }
 
 
@@ -96,6 +95,7 @@ resetw()
 {
 
 	drv.stream = drv.image;
+	drv.w_read = 0;
 	return 0;
 }
 

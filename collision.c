@@ -67,7 +67,6 @@ hash_collision()
 	total_len = ((bitlen > 23) ? 1 << (bitlen - 23) : 1);
 
 	segment_len = MIN(regsize, total_len);
-
 	if (rlimit_data != RLIM_INFINITY)
 		segment_len = MIN(rlimit_data >> 21, segment_len);	/* half size of
 									 * rlimit_data or
@@ -105,15 +104,12 @@ hash_collision()
 	for (i = 0; i < MAX(total_len / segment_len, 1); i++) {
 
 		PUTS("step # %d/%d   \r", i + 1, (int) (total_len / segment_len));
-
 		memset(p, 0, segment_len Mbyte);
 
 		/* processing the dictionary */
-
 		for (j = 0; j < drv.w_max; j++) {
 
 			h = hlist[j];
-
 			if (CHECK_BOUND(i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 				if TST_BIT
 					(p, i * (segment_len Mbyte) + 1, h) col++;
@@ -127,7 +123,6 @@ hash_collision()
 
 	free(hlist);
 	free(p);
-
 	PUTS("total collisions    : %lu/%d\n", col, drv.w_max);
 
 	return (col);
