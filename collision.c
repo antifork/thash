@@ -47,6 +47,34 @@
 #include "prototype.h"
 #include "macro.h"
 
+static
+#ifdef __GNUC__
+__inline
+#endif
+unsigned long
+xor_folding (hash, b)
+     unsigned long hash;
+     int b;
+{
+    unsigned long mask;
+    unsigned long ret;
+
+    if ( b == 32 )
+        return hash;
+
+    mask = (1 << b) - 1;
+    ret  = 0;
+
+    while (hash) {
+        ret ^= (hash & mask);
+        hash >>= b;
+    }
+
+    return (ret);
+
+}
+
+
 int
 hash_collision ()
 {
@@ -96,7 +124,7 @@ hash_collision ()
 	while (  drv.read (buf, 79) != NULL) {
 
             h = HASH (buf); 
-            h = ((h>> bitlen) ^ (h & bitmask)) & bitmask;
+	    h = xor_folding ( h, bitlen);
 
 	    if (CHECK_BOUND (i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 		if TST_BIT
