@@ -37,7 +37,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-static const char cvsid[] = "$cvsid: neo_options.c,v 1.16 2003/05/06 01:24:12 awgn Exp $";
+static const char cvsid[] = "$cvsid: neo_options.c,v 1.17 2003/05/06 08:37:35 awgn Exp $";
 static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
 
 extern char *__progname;
@@ -386,7 +386,9 @@ restart:
 		if (!*place)
 			++neoptind;
 		if (neopterr && *ostr != ':')
-			fatal("[!] %s: illegal option -- %c\n", __FUNCTION__, neoptopt);
+			(strchr(ostr,'?') ? warn("[!] %s: illegal option -- %c\n", __FUNCTION__, neoptopt) : 
+						fatal("[!] %s: illegal option -- %c\n", __FUNCTION__, neoptopt));
+				
 		return_w(BADCH);
 	}
 	if (*++oli != ':') {	/* don't need argument */
@@ -496,23 +498,24 @@ ret_control:
 struct neo_options opt[] = {
 	{'-', 0, 0, NULL, "first section"},
 	{'a', no_argument, "a/ab", NULL, "test"},
-     // {'a', no_argument, "a/ab", NULL, "test"}, //<--a is already in use.
-     // {'m', no_argument, "a/cb", NULL, "test"}, //<-bugus and - mask(never true)
-     // {'k', no_argument, "a|cb", NULL, "test"}, //<-wrong separator:and - mask format is "a/ab"
+// 	{'a', no_argument, "a/ab", NULL, "test"}, //<--a is already in use.
+// 	{'m', no_argument, "a/cb", NULL, "test"}, //<-bugus and - mask(never true)
+// 	{'k', no_argument, "a|cb", NULL, "test"}, //<-wrong separator:and - mask format is "a/ab"
 	{'b', no_argument, "bc/bc", NULL, "test.."},
 	{'-', 0, 0, NULL, "second section"},
 	{'c', required_argument, "cd/cd", "int", "test..."},
 	{'d', required_argument, "d/d", "u_int", "test...."},
-     // {'l', no_argument, "a/sd/d", NULL, "---"}, //<-parse error
+// 	{'l', no_argument, "a/sd/d", NULL, "---"}, //<-parse error
 	{'e', no_argument, "", NULL, "---"},
 	{'z', no_argument, "", NULL, "test....."},
 	{'h', no_argument, "", NULL, "print help"},
 	{'!', no_argument, NULL, NULL, "show dependencies"},
-	{'+', 0, "az|de", 0},
-     // {'+', 0, "a|ade", 0}, //<-bogus or - mask(always true)
-     // {'+', 0, "a/bc", 0}, //<-wrong separator:or - mask format is "x|yz"
-	{'+', 0, "|dz", 0},
-	{0, 0, 0, 0}
+//	{'?', no_argument, NULL, NULL, 0},
+	{'+', 0, "az|de", 0, 0},
+//	{'+', 0, "a|ade", 0, 0}, //<-bogus or - mask(always true)
+//	{'+', 0, "a/bc", 0, 0}, //<-wrong separator:or - mask format is "x|yz"
+	{'+', 0, "|dz", 0, 0},
+	{0, 0, 0, 0, 0}
 };
 
 
@@ -556,7 +559,7 @@ main(int argc, char **argv)
 	while ((i = neo_getopt(argc, argv, opt, OPT_DELAYED)) != EOF) {
 		switch (i) {
 		case '?':
-			exit(-1);
+			printf("unknown ? opt: neoptarg=%s\n", neoptarg);
 			break;
 		case 'h':
                         // int
@@ -586,7 +589,6 @@ main(int argc, char **argv)
 			printf("opt: %-c given, neoptarg=%s\n", i,neoptarg);
 			break;
 		}
-
 	}
 
         argc -= neoptind;
