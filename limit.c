@@ -36,22 +36,16 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
 #include "config.h"
-
 #include "local.h"
 #include "global.h"
-
 #include "macro.h"
 #include "prototype.h"
-
 
 void
 getlimit_data()
 {
 	struct rlimit me;
-
 	getrlimit(RLIMIT_DATA, &me);
 	rlimit_data = me.rlim_cur;
-
 }

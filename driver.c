@@ -39,6 +39,8 @@
 #include "thash.h"
 #include "macro.h"
 
+/* prototypes */
+
 int openw(char *);
 int openr(char *);
 int openi(char *);
@@ -63,7 +65,6 @@ int closeg();
 int
 setup_driver()
 {
-
 	switch (opt_input) {
 	case OPT_WORDLIST:
 		PUTS("drv:input method    : wordlist\n");
@@ -89,6 +90,5 @@ setup_driver()
 	default:
 		FATAL("unknown device");
 	}
-
 	return 0;
 }

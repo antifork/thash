@@ -67,12 +67,7 @@ hash_register(char *so)
 		fputs("\n", stderr);
 		exit(1);
 	}
-#if defined(__OpenBSD__)
-	ext_hash = dlsym(handle, "_hash");
-#else
-	ext_hash = dlsym(handle, "hash");
-#endif
 
+	ext_hash = dlsym(handle, SYM("hash"));
 	return;
-
 }

@@ -38,7 +38,6 @@
 #include <string.h>
 
 #include "config.h"
-
 #include "local.h"
 #include "global.h"
 #include "prototype.h"
@@ -67,5 +66,4 @@ hash_search()
 		PUTS("(%lu) not found!\n", findhash);
 
 	drv.close();
-
 }

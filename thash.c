@@ -53,7 +53,6 @@ extern char *optarg;
 extern int optind, opterr, optopt;
 
 static struct neo_options opt[] = {
-
 	{'-', 0, 0, NULL, "hash:"},
 	{'c', required_argument, "c/co", "hash.c", "hash is a c source"},
 	{'o', required_argument, "o/co", "hash.so", "hash is a shared object (-fPIC)"},
@@ -120,7 +119,7 @@ main(int argc, char **argv, char **env)
 
 	environ = env;
 
-	while ((es = neo_getopt(argc, argv, opt)) != EOF)
+	while ((es = neo_getopt(argc, argv, opt,OPT_DELAYED)) != EOF)
 		switch (es) {
 			/* hash */
 		case 'c':
@@ -304,5 +303,4 @@ main(int argc, char **argv, char **env)
 	}
 
 	exit(1);
-
 }

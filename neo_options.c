@@ -29,51 +29,56 @@
  *
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
 
-#define  CVSID          "$Id$"
-#define  AUTHORS        "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>"
-#define  VERSION        "1.1"
+static const char cvsid[] = "$cvsid: neo_options.c,v 1.9 2003/05/04 20:18:56 awgn Exp $";
+static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
 
 #define   NEO_LIBRARY
 #include "neo_options.h"
-
 #define RSIZE	(80 bit)
+
+
+static void fatal(char *pattern,...) __attribute__((noreturn));
+static void
+fatal(char *pattern,...)
+{
+	va_list ap;
+	va_start(ap, pattern);
+	vfprintf(stderr, pattern, ap);
+	va_end(ap);
+	exit(1);
+}
 
 static int
 check_neo_options(struct neo_options * n)
 {
 	REG reg[RSIZE];
-
 	REG_CLR(reg, RSIZE);
 
 	for (; n->opt != 0; n++)
 		switch (n->opt) {
-
 		case '-':
 		case '+':
 			continue;
 		default:
-
 			if (REG_BT(reg, (n->opt - '0')))
-				FATAL("-%c opt error. option already in use", n->opt);
+				fatal("-%c opt error. option already in use\n", n->opt);
 			REG_BS(reg, (n->opt - '0'));
 		}
-
 
 	return 0;
 }
 
-
 static int
 compile_optmask(char c, char *s, REG r[], REG m[])
 {
-	int ret, slash, i;
 
-	ret = 0;
-	slash = 0;
+	int ret = 0, slash = 0, i;
 
 	REG_CLR(r, RSIZE);
 	REG_CLR(m, RSIZE);
@@ -82,19 +87,16 @@ compile_optmask(char c, char *s, REG r[], REG m[])
 		return 0;
 
 	for (i = 0; s[i] != 0; i++) {
-
 		switch (s[i]) {
-
 		case '/':
 			if (slash != 0)
-				FATAL("-%c \"%s\" error bad optmask", c, s);	/* error */
+				fatal("-%c \"%s\" error bad optmask\n", c, s);	/* error */
 			slash++;
 			continue;
 		default:
 			REG_BS((slash == 0 ? r : m), (s[i] - '0'));
 			ret |= (slash == 0 ? 2 : 1);
 		}
-
 	}
 
 	return (ret);
@@ -106,9 +108,8 @@ compile_optstring(struct neo_options * n)
 {
 	struct neo_options *m;
 	char *op;
-	int l;
+	int l = 0;
 
-	l = 0;
 	for (m = n; m->opt != 0; m++)
 		l += (m->has_arg > 1 ? 2 : 1);
 	op = (char *) malloc(l + 1);
@@ -129,7 +130,7 @@ compile_optstring(struct neo_options * n)
 }
 
 
-static char spaces[32] = {[0 ... 31] = ' '};
+static char spaces[32] = { [0 ... 31] = ' '};
 
 /***
 public functions
@@ -138,22 +139,18 @@ public functions
 int
 neo_usage(FILE * f, char *h, struct neo_options * n)
 {
-	int br;
+	int br = 1;
 
-	br = 1;
 	if (n == NULL)
-		FATAL("NULL pointer?");
+		fatal("NULL pointer?\n");
+
 	/* print header */
 	fprintf(f, "%s\n", h);
 
 	for (; n->opt != 0; n++)
 		switch (n->opt) {
-
 		case '-':
-			if (n->usage != NULL)
-				fprintf(f, " %s\n", n->usage);
-			else
-				fprintf(f, "\n");
+			fprintf(f, " %s\n", n->usage);
 			continue;
 		case '+':
 			continue;
@@ -169,8 +166,6 @@ neo_usage(FILE * f, char *h, struct neo_options * n)
 				fprintf(f, "%s%s\n", spaces, n->usage);
 			}
 		}
-
-
 	return 0;
 }
 
@@ -178,15 +173,13 @@ neo_usage(FILE * f, char *h, struct neo_options * n)
 int
 neo_showdepend(FILE * f, struct neo_options * n)
 {
+
 	if (n == NULL)
-		FATAL("NULL pointer?");
-	/* print header */
+		fatal("NULL pointer?\n");
 
 	fprintf(f, "option dependencies:\n");
-
 	for (; n->opt != 0; n++)
 		switch (n->opt) {
-
 		case '-':
 		case '@':
 			continue;
@@ -198,86 +191,90 @@ neo_showdepend(FILE * f, struct neo_options * n)
 			if (n->depend != NULL)
 				fprintf(f, "   -%c (and)                     \"%s\"\n", n->opt, n->depend);
 		}
-
-
 	return 0;
 }
 
 
 int
-neo_getopt(int argc, char *const argv[], struct neo_options * n)
+neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
 {
 	REG opts[RSIZE], mask[RSIZE], temp[RSIZE];
 	static REG master[RSIZE];
 	static char *optstring;
-	int c;
-	int d;
+	int c, d;
 
 	if (optstring == NULL) {
-
 		/* init */
 		check_neo_options(n);
 		optstring = compile_optstring(n);
 	}
-	c = getopt(argc, argv, optstring);
-	REG_BS(master, (c - '0'));
 
-	if (c == EOF) {
-		for (; n->opt != 0; n++) {
-			switch (n->opt) {
+	if (mode == OPT_NOW) {	/* OPT_NOW */
+		/* check all options concistency */ 
+		while (( c = getopt(argc, argv, optstring))!= EOF )
+			REG_BS(master, (c - '0'));
+			optind = 1;
+	}
+	else {		/* OPT_DELAYED */
+		c = getopt(argc, argv, optstring);
+		if (c != EOF) {
+			REG_BS(master, (c - '0'));
+			return (c);
+		}
+	}
 
-				/* comment line */
-			case '-':
+	for (; n->opt != 0; n++) {
+		switch (n->opt) {
+			/* comment line */
+		case '-':
+			continue;
+			/* obligation line */
+		case '+':
+			REG_CPY(master, temp, RSIZE);
+			d = compile_optmask(n->opt, n->depend, opts, mask);
+
+			switch (d) {
+			 /* NULL/NULL */ case 0:
 				continue;
-				/* obligation mask */
-			case '+':
-				REG_CPY(master, temp, RSIZE);
-				d = compile_optmask(n->opt, n->depend, opts, mask);
+			 /* NULL/OK */ case 1:
+				break;
+			 /* OK/NULL */ case 2:
+				/* error ignoring it... */
+				continue;
+			 /* OK/OK */ case 3:
+				/*
+				 * control whether to check the
+				 * obligation or not
+				 */
 
-				switch (d) {
-				 /* NULL/NULL */ case 0:
-					/* empty oblimask */
+				REG_AND(temp, opts, RSIZE);
+
+				if (REG_ISNULL(opts, RSIZE))
 					continue;
-				 /* NULL/OK */ case 1:
-					/* absolute obligation */
-					break;
-				 /* OK/NULL */ case 2:
-					/* oblimask error. ignoring it... */
-					continue;
-				 /* OK/OK */ case 3:
-					/*
-				         * control whether to check the
-				         * obligation or not
-				         */
-
-					REG_AND(temp, opts, RSIZE);
-
-					if (REG_ISNULL(opts, RSIZE))
-						continue;
-				}
-
-				/* real oblimask checking */
-
-				REG_AND(mask, temp, RSIZE);
-				if (REG_ISNULL(temp, RSIZE))
-					FATAL("obligation mask \"%s\" error. (missing options?)", n->depend);
-				continue;
-				/* classic optmask */
-			default:
-				if (REG_BT(master, (n->opt - '0')) == 0)
-					continue;	/* the current options
-							 * wasn't set, its
-							 * optmask is ignored */
-				REG_CPY(master, temp, RSIZE);
-				/* be sure that the current options is set */
-				REG_BS(temp, (n->opt - '0'));
-				compile_optmask(n->opt, n->depend, opts, mask);
-				REG_AND(mask, temp, RSIZE);
-				if (!REG_CMP(temp, opts, RSIZE))
-					FATAL("-%c optmask \"%s\" error. (mismatch dependency?)", n->opt, n->depend);	/* error */
-				continue;
 			}
 
+			/* obligation(or) mask check */
+			REG_AND(mask, temp, RSIZE);
+			if (REG_ISNULL(temp, RSIZE))
+				fatal("obligation mask \"%s\" error. (missing options?)\n", n->depend);
+			continue;
+
+			/* (and) mask check */
+		default:
+			if (REG_BT(master, (n->opt - '0')) == 0)
+				continue;	/* the current options wasn't
+						 * set, its optmask is
+						 * ignored */
+
+			/* be sure that the current options is set */
+			REG_CPY(master, temp, RSIZE);
+			REG_BS(temp, (n->opt - '0'));
+			compile_optmask(n->opt, n->depend, opts, mask);
+			REG_AND(mask, temp, RSIZE);
+
+			if (!REG_CMP(temp, opts, RSIZE)) /* error */
+				fatal("-%c optmask \"%s\" error. (mismatch dependency?)\n", n->opt, n->depend);
+			continue;
 		}
 
 	}
@@ -285,7 +282,7 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n)
 }
 
 
-#ifdef TEST_NEOOPT
+#ifdef TEST
 
 struct neo_options opt[] = {
 	{'-', 0, 0, NULL, "first section"},
@@ -305,18 +302,23 @@ struct neo_options opt[] = {
 int
 main(int argc, char **argv)
 {
+
 	int i;
 
 	if (argc < 2) {
 		neo_usage(stderr, "usage: neo_getopt model usage", opt);
 		exit(1);
 	}
-	while ((i = neo_getopt(argc, argv, opt)) != EOF)
+
+	printf("OPT_NOW ...\n");
+	neo_getopt(argc, argv, opt, OPT_NOW);
+
+	printf("OPT_DELAYED ...\n");
+	while ((i = neo_getopt(argc, argv, opt, OPT_DELAYED)) != EOF)
 		switch (i) {
 		case '?':
 			exit(-1);
 			break;
-
 		case 'h':
 			neo_usage(stderr, "usage: neo_getopt model usage", opt);
 			exit(1);
@@ -330,7 +332,7 @@ main(int argc, char **argv)
 			break;
 		}
 
-	return 0;
+	printf("done :-)\n");
+	return(0);
 }
-
 #endif

@@ -104,4 +104,10 @@ if ((p) == NULL )						\
 #define ABS(x)   ( (x) < 0 ? -(x) : (x) )
 #endif
 
+#if defined(__OpenBSD__)
+#define SYM(x)  "_" ## x
+#else
+#define SYM(x)  x
+#endif
+
 #endif /* MACRO_H */

@@ -91,7 +91,6 @@ unsigned long
 __hash_retry(char *h)
 {
 	unsigned long hh;
-
 	hh = HASH(h);
 
 	while (hh > RETRY_LEVEL) {
@@ -99,7 +98,6 @@ __hash_retry(char *h)
 	}
 
 	hh %= hash.len;
-
 	return (hh);
 }
 
@@ -109,8 +107,7 @@ setup_hdriver()
 {
 
 	switch (opt_filters) {
-
-		case 0:
+	case 0:
 		hash.drv = __hash_pure;
 		break;
 	case OPT_MASK:

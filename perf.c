@@ -38,7 +38,6 @@
 #include <string.h>
 
 #include "config.h"
-
 #include "local.h"
 #include "global.h"
 #include "prototype.h"
@@ -90,9 +89,7 @@ hash_perf()
 	/* processing the dictionary */
 
 	while (drv.read(buf, 79) != NULL) {
-
 		h = (unsigned long) ext_hash(buf, strlen(buf));
-
 	}
 
 	gettimeofday(&end, NULL);
@@ -105,7 +102,5 @@ hash_perf()
 	PUTS("megahash/sec        : %g\n", r / 1000000);
 
 	drv.close();
-
 	return;
-
 }

@@ -57,11 +57,6 @@ char *readw _P ((char *dst, int size));
 /* limit.c */
 void getlimit_data _P ((void));
 
-/* neo_options.c */
-int neo_usage _P ((FILE * f, char *h, struct neo_options * n));
-int neo_showdepend _P ((FILE * f, struct neo_options * n));
-int neo_getopt _P ((int argc, char *const argv[], struct neo_options * n));
-
 /* perf.c */
 int difftimeofday _P ((struct timeval now, struct timeval old, elapsed_val * diff));
 void hash_perf _P ((void));

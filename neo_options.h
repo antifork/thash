@@ -1,4 +1,5 @@
 /*
+ * $Id$
  * neo_options
  * 
  * Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>
@@ -34,8 +35,11 @@
 
 #include <unistd.h>
 
-enum args {
-    no_argument = 1,
+#define OPT_NOW		1
+#define OPT_DELAYED	2
+
+enum args { 
+    no_argument=1,
     required_argument,
 };
 
@@ -51,7 +55,7 @@ typedef unsigned char REG;
 
 int neo_usage (FILE *, char *, struct neo_options *);
 int neo_showdepend (FILE *, struct neo_options *);
-int neo_getopt (int, char *const[], struct neo_options *);
+int neo_getopt (int , char *const[] , struct neo_options *, int);
 
 #ifdef NEO_LIBRARY
 
@@ -74,51 +78,44 @@ int neo_getopt (int, char *const[], struct neo_options *);
 
 #define REG_CLR(r,b)    memset((void *)(r),0,(b))
 
-#define REG_NOT(r,b)   {			\
+#define REG_NOT(r,b)   ({			\
 REG_FOREACH(b)					\
         r[i] = ~r[i];                           \
-}
+})
 
-#define REG_AND(s,d,b) {			\
-REG_FOREACH(b)                                      \
+#define REG_AND(s,d,b) ({			\
+REG_FOREACH(b)                                  \
 	d[i] &= s[i];				\
-}
+})
 
-#define REG_OR(s,d,b)  { 			\
-REG_FOREACH(b)                                      \
+#define REG_OR(s,d,b)  ({ 			\
+REG_FOREACH(b)                                  \
         d[i] |= s[i];                           \
-}
+})
 
-#define REG_XOR(s,d,b) {			\
-REG_FOREACH(b)                                      \
+#define REG_XOR(s,d,b) ({			\
+REG_FOREACH(b)                                  \
         d[i] ^= s[i];                           \
-}
+})
 
-#define REG_CPY(s,d,b) {                        \
-REG_FOREACH(b)                                      \
+#define REG_CPY(s,d,b) ({                       \
+REG_FOREACH(b)                                  \
         d[i] = s[i];                            \
-}
+})
 
 #define REG_CMP(s,d,b) ({			\
 int j=0;                               		\
-REG_FOREACH(b)                                      \
+REG_FOREACH(b)                                  \
         j |= d[i]^s[i];				\
 !j;						\
 })
 
 #define REG_ISNULL(r,b) ({ 			\
 int j=0;                               		\
-REG_FOREACH(b)                                      \
+REG_FOREACH(b)                                  \
         j |= r[i];                       	\
 !j;                                     	\
 })
-
-#define FATAL(f,arg...) {                                               \
-fprintf(stderr,"%s(): ",__FUNCTION__);          			\
-fprintf(stderr,f,## arg);                                               \
-fprintf(stderr,"\n");                                                   \
-exit(1);                                                                \
-}
 
 #endif /* NEO_LIBRARY */
 #endif /* NEO_OPTIONS_H */
