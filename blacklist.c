@@ -222,9 +222,9 @@ insert_list (struct main_list *h, unsigned long n)
 
 static
 #ifdef __GNUC__
-__inline
+    __inline
 #endif
-unsigned long
+    unsigned long
 xor_folding (hash, b)
      unsigned long hash;
      int b;
@@ -232,15 +232,15 @@ xor_folding (hash, b)
     unsigned long mask;
     unsigned long ret;
 
-    if ( b == 32 )
-        return hash;
+    if (b == 32)
+	return hash;
 
     mask = (1 << b) - 1;
-    ret  = 0;
-   
+    ret = 0;
+
     while (hash) {
-        ret ^= (hash & mask);
-        hash >>= b;
+	ret ^= (hash & mask);
+	hash >>= b;
     }
 
     return (ret);
@@ -301,8 +301,7 @@ hash_blacklist ()
 
 	while (drv.read (buf, 79) != NULL) {
 
-            h = HASH (buf);
-	    h = xor_folding(h,bitlen);
+	    h = hash.drv (buf);
 
 	    if (CHECK_BOUND (i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 
@@ -339,8 +338,7 @@ hash_blacklist ()
 
 	while (drv.read (buf, 79) != NULL) {
 
-            h = HASH (buf);
-	    h = xor_folding (h, bitlen);
+	    h = hash.drv (buf);
 
 	    if (CHECK_BOUND (i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 		if TST_BIT

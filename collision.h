@@ -33,7 +33,7 @@
 #define COLLISION_H
 
 #define CHECK_BOUND(l,x,h) ( ((l) <= (x)) && ((x) <= (h)) )
-#define TST_BIT(buf,base,x) (*((buf)-(base)+((x)>>3)) &  (1<<((x)&7))) 
-#define SET_BIT(buf,base,x) (*((buf)-(base)+((x)>>3)) |= (1<<((x)&7))) 
+#define TST_BIT(buf,base,x) (*((buf)-(base)+((x)>>3)) &  (1<<((x)&7)))
+#define SET_BIT(buf,base,x) (*((buf)-(base)+((x)>>3)) |= (1<<((x)&7)))
 
 #endif /* COLLISION_H */

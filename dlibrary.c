@@ -52,10 +52,10 @@ hash_register (char *so)
     void *handle;
 
     if (so == NULL)
-        FATAL ("err: so (NULL)");
+	FATAL ("err: so (NULL)");
 
     if (so[0] != '.' && so[0] != '/')
-        strlcat (soname, "./", 80);
+	strlcat (soname, "./", 80);
 
     strlcat (soname, so, 80);
     strlcat (soname, ".so", 80);
@@ -63,17 +63,16 @@ hash_register (char *so)
     handle = dlopen (soname, RTLD_NOW);
 
     if (!handle) {
-        fputs (dlerror (), stderr);
-        fputs ("\n", stderr);
-        exit (1);
+	fputs (dlerror (), stderr);
+	fputs ("\n", stderr);
+	exit (1);
     }
 #if defined(__OpenBSD__)
-    hash = dlsym (handle, "_hash");
+    ext_hash = dlsym (handle, "_hash");
 #else
-    hash = dlsym (handle, "hash");
+    ext_hash = dlsym (handle, "hash");
 #endif
 
     return;
 
 }
-

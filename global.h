@@ -40,24 +40,30 @@
 #endif
 
 
-EXTERN unsigned long options;
-EXTERN unsigned long regsize INIT (=REGSIZE);
-EXTERN unsigned long usrsize INIT (=512);
+EXTERN unsigned short opt_hash;
+EXTERN unsigned short opt_filters;
+EXTERN unsigned short opt_input;
+EXTERN unsigned short opt_options;
+EXTERN unsigned short opt_test;
+
+EXTERN unsigned long regsize INIT ( = REGSIZE);
+EXTERN unsigned long usrsize INIT ( = 512);
 
 EXTERN long long rlimit_data;
 
-EXTERN unsigned long (*hash) (char *, int);
+EXTERN unsigned long (*ext_hash) (char *, int);
 
 EXTERN char buf[80];
-EXTERN char *hashsource; 
+EXTERN char *hashsource;
 EXTERN char *media;
 
-EXTERN unsigned long  bitlen;
-EXTERN unsigned long  tablen;
-EXTERN unsigned long  findhash;
+EXTERN unsigned long bitlen;
+EXTERN unsigned long tablen;
+EXTERN unsigned long findhash;
 EXTERN char **environ;
 
 EXTERN tdriver drv;
+EXTERN hdriver hash;
 
 #undef EXTERN
 #undef INIT

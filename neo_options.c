@@ -130,7 +130,7 @@ compile_optstring (struct neo_options *n)
 }
 
 
-static char spaces[32] = { [0 ... 31] = ' ' };
+static char spaces[32] = {[0 ... 31] = ' ' };
 
 /***
 public functions
@@ -150,10 +150,10 @@ neo_usage (FILE * f, char *h, struct neo_options *n)
 	switch (n->opt) {
 
 	 case '-':
-	     if (n->usage != NULL)	
-	     	fprintf (f, " %s\n", n->usage);
+	     if (n->usage != NULL)
+		 fprintf (f, " %s\n", n->usage);
 	     else
-		fprintf (f, "\n");	
+		 fprintf (f, "\n");
 	     continue;
 	 case '+':
 	     continue;
@@ -163,9 +163,9 @@ neo_usage (FILE * f, char *h, struct neo_options *n)
 		     fprintf (f, "   -%c                           %s\n", n->opt, n->usage);
 		     break;
 		 }
-		 spaces[ (sizeof (spaces) - br) & 0x1f] = ' ';
+		 spaces[(sizeof (spaces) - br) & 0x1f] = ' ';
 		 fprintf (f, "   -%c %s%n", n->opt, n->arg, &br);
-		 spaces[ (sizeof (spaces) - br) & 0x1f] = '\0';
+		 spaces[(sizeof (spaces) - br) & 0x1f] = '\0';
 		 fprintf (f, "%s%s\n", spaces, n->usage);
 	     }
 	}

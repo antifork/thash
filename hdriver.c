@@ -33,61 +33,98 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <fcntl.h>
 
 #include "global.h"
 #include "thash.h"
 #include "macro.h"
 
-int openw (char *);
-int openr (char *);
-int openi (char *);
-int openg (char *);
+unsigned long
+__hash_mask (char *h)
+{
+    return (HASH (h) & hash.mask);
+}
 
-char *readw (char *, int);
-char *readr (char *, int);
-char *readr64 (char *, int);
-char *readi (char *, int);
-char *readg (char *, int);
 
-int resetw ();
-int resetr ();
-int reseti ();
-int resetg ();
+unsigned long
+__hash_xor_folding (char *h)
+{
+    unsigned long hh;
+    unsigned long ret;
 
-int closew ();
-int closer ();
-int closei ();
-int closeg ();
+    if (hash.len == 32)
+	return (HASH (h));
+
+    hh = HASH (h);
+    ret = 0;
+
+    while (hh) {
+	ret ^= (hh & hash.mask);
+	hh >>= hash.len;
+    }
+
+    return (ret);
+
+}
+
+unsigned long
+__hash_dumb_mod (char *h)
+{
+    return (HASH (h) % hash.len);
+}
+
+
+#define FNV_32_PRIME            16777619
+#define FNV_32_INIT             (0x811c9dc5)
+#define MAX_32BIT               ((unsigned int)0xffffffff)	/* largest 32 bit unsigned value */
+#define RETRY_LEVEL             ((MAX_32BIT / hash.len) * hash.len)
+
+unsigned long
+__hash_retry (char *h)
+{
+    unsigned long hh;
+
+    hh = HASH (h);
+
+    while (hh > RETRY_LEVEL) {
+	hh = (hh * FNV_32_PRIME) + FNV_32_INIT;
+    }
+
+    hh %= hash.len;
+
+    return (hh);
+
+}
+
 
 int
-setup_driver ()
+setup_hdriver ()
 {
 
-    switch (opt_input) {
-     case OPT_WORDLIST:
-	 PUTS ("drv:input method    : wordlist\n");
-	 drv.open = openw;
-	 drv.read = readw;
-	 drv.reset = resetw;
-	 drv.close = closew;
+    switch (opt_filters) {
+     case OPT_MASK:
+	 PUTS ("drv:hash method     : mask\n");
+	 hash.drv = __hash_mask;
+	 hash.len = bitlen;
+	 hash.mask = (1 << bitlen) - 1;
 	 break;
-     case OPT_RAND:
-	 PUTS ("drv:input method    : ISAAC random geneator\n");
-	 drv.open = openr;
-	 drv.read = (opt_options & OPT_RADIX64 ? readr64 : readr);
-	 drv.reset = resetr;
-	 drv.close = closer;
+     case OPT_XOR:
+	 PUTS ("drv:hash method     : xor-folding\n");
+	 hash.drv = __hash_xor_folding;
+	 hash.len = bitlen;
+	 hash.mask = (1 << bitlen) - 1;
 	 break;
-     case OPT_GRAY:
-	 PUTS ("drv:input method    : gray sequence\n");
-	 drv.open = NULL;
-	 drv.read = NULL;
-	 drv.reset = NULL;
-	 drv.close = NULL;
+     case OPT_MOD:
+	 PUTS ("drv:hash method     : lazy mod mapping\n");
+	 hash.drv = __hash_dumb_mod;
+	 hash.len = tablen;
+	 break;
+     case OPT_RETRY:
+	 PUTS ("drv:hash method     : fnv-retry\n");
+	 hash.drv = __hash_retry;
+	 hash.len = tablen;
 	 break;
      default:
-	 FATAL ("unknown device");
+	 FATAL ("unknown hash method");
     }
 
     return 0;

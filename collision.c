@@ -47,34 +47,6 @@
 #include "prototype.h"
 #include "macro.h"
 
-static
-#ifdef __GNUC__
-__inline
-#endif
-unsigned long
-xor_folding (hash, b)
-     unsigned long hash;
-     int b;
-{
-    unsigned long mask;
-    unsigned long ret;
-
-    if ( b == 32 )
-        return hash;
-
-    mask = (1 << b) - 1;
-    ret  = 0;
-
-    while (hash) {
-        ret ^= (hash & mask);
-        hash >>= b;
-    }
-
-    return (ret);
-
-}
-
-
 int
 hash_collision ()
 {
@@ -86,7 +58,7 @@ hash_collision ()
     unsigned long bitmask;
     int i;
 
-    if ( drv.open (media) == -1)
+    if (drv.open (media) == -1)
 	FATAL ("open interface error!");
 
     col = 0;
@@ -121,10 +93,9 @@ hash_collision ()
 
 	/* processing the dictionary */
 
-	while (  drv.read (buf, 79) != NULL) {
+	while (drv.read (buf, 79) != NULL) {
 
-            h = HASH (buf); 
-	    h = xor_folding ( h, bitlen);
+	    h = hash.drv (buf);
 
 	    if (CHECK_BOUND (i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 		if TST_BIT
@@ -140,7 +111,7 @@ hash_collision ()
     free (p);
     drv.close ();		/* close input interface */
 
-    PUTS ("total collisions    : %lu/%d\n", col,drv.w_max);
+    PUTS ("total collisions    : %lu/%d\n", col, drv.w_max);
 
     return (col);
 

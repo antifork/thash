@@ -53,7 +53,7 @@ char enctab[64] = {		/* radix64 encoding table */
 static char radix_vector[1365];
 static randctx ctx;
 static ub1 c_vect;
-static char *cc = (char *)ctx.randrsl;
+static char *cc = (char *) ctx.randrsl;
 
 void
 b3b4_radix (char *a, char *b)
@@ -109,9 +109,9 @@ readr (char *b, int null)
 
     for (i = 0; i < drv.w_len; i++, c_vect++) {
 
-	if (!(c_vect & 0x03ff )) {
-		isaac (&ctx);
-		c_vect = 0;
+	if (!(c_vect & 0x03ff)) {
+	    isaac (&ctx);
+	    c_vect = 0;
 	}
 
 	b[i] = cc[c_vect];
@@ -130,17 +130,17 @@ readr64 (char *b, int null)
     int i;
 
     if (drv.w_read == drv.w_max)
-        return NULL;
+	return NULL;
 
     for (i = 0; i < drv.w_len; i++, c_vect++) {
 
-        if (!(c_vect & 0x03ff )) {
-                isaac (&ctx);
-		b3b4_radix (cc, radix_vector);
-                c_vect = 0;
-        }
+	if (!(c_vect & 0x03ff)) {
+	    isaac (&ctx);
+	    b3b4_radix (cc, radix_vector);
+	    c_vect = 0;
+	}
 
-	b[i] = enctab[(int)radix_vector[c_vect]];
+	b[i] = enctab[(int) radix_vector[c_vect]];
     }
 
     b[drv.w_len] = 0;
@@ -155,5 +155,3 @@ closer ()
 {
     return 0;
 }
-
-

@@ -43,8 +43,8 @@ datadir     = @datadir@
 srcdir      = @srcdir@
 shtool      = @SHTOOL@
 
-OBJS =  thash.o driver.o rand.o input_wordlist.o input_rand.o dlibrary.o limit.o \
-	collision.o blacklist.o fit.o fit-ret.o perf.o hash_2d.o \
+OBJS =  thash.o driver.o hdriver.o rand.o input_wordlist.o input_rand.o dlibrary.o limit.o \
+	collision.o blacklist.o fit.o perf.o hash_2d.o \
 	hash_3d.o search.o bitcount.o cc.o neo_options.o @LIBOBJS@ 
 
 GSORT =	gsort.o input_wordlist.o

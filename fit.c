@@ -72,24 +72,23 @@ hash_fitest ()
     j = 0;
 
 
-    if ( drv.open (media) == -1)
-        FATAL ("open interface error!");
+    if (drv.open (media) == -1)
+	FATAL ("open interface error!");
 
-    drv.reset();
+    drv.reset ();
 
     table = (int *) calloc (tablen, sizeof (int));
 
-    while ( drv.read (buf, 79) != NULL) {
+    while (drv.read (buf, 79) != NULL) {
+	h = hash.drv (buf);
 
-        h = HASH(buf);
-
-	if (table[h % tablen])
+	if (table[h])
 	    col++;
 
-	if ((fc == 0) && table[h % tablen])
+	if ((fc == 0) && table[h])
 	    fc = j;
 
-	table[h % tablen]++;
+	table[h]++;
 
 	j++;
 

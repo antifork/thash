@@ -50,19 +50,19 @@ openw (const char *pathname)
     int size;
 
     if (stat (pathname, &f_stat) == -1) {
-	fprintf (stderr,"open_fi::stat(%s) %s\n",pathname,strerror(errno));
+	fprintf (stderr, "open_fi::stat(%s) %s\n", pathname, strerror (errno));
 	return -1;
     }
 
     size = (int) f_stat.st_size;
 
     if ((drv.fd = open (pathname, O_RDONLY)) == -1) {
-	fprintf (stderr,"open_fi::open(%s) %s\n",pathname,strerror(errno));
+	fprintf (stderr, "open_fi::open(%s) %s\n", pathname, strerror (errno));
 	return -1;
     }
 
     drv.image = mmap (NULL, size, PROT_READ, MAP_PRIVATE, drv.fd, 0);
-    drv.size  = size;
+    drv.size = size;
 
     if (drv.image == MAP_FAILED) {
 	perror ("open_fi::mmap");
@@ -78,7 +78,7 @@ int
 closew ()
 {
     drv.image = NULL;
-    drv.fd    = 0;
+    drv.fd = 0;
 
     return (munmap (drv.image, drv.size));
 
@@ -98,10 +98,10 @@ char *
 readw (char *dst, int size)
 {
 
-    char *p=drv.stream;
-    char *s=dst; 
+    char *p = drv.stream;
+    char *s = dst;
 
-    int i=0;
+    int i = 0;
 
     if (p == NULL)
 	return NULL;
@@ -112,7 +112,7 @@ readw (char *dst, int size)
     while (*p != '\0' && *p != '\n' && i < size) {
 	*(s++) = *(p++);
 	i++;
-        
+
     }
 
     if (*p == '\0' || *p == '\n') {

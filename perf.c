@@ -80,8 +80,8 @@ hash_perf ()
     double r;
     double d;
 
-    if ( drv.open(media) == -1)
-        FATAL ("open interface error!");
+    if (drv.open (media) == -1)
+	FATAL ("open interface error!");
 
     gettimeofday (&start, NULL);
 
@@ -89,9 +89,9 @@ hash_perf ()
 
     /* processing the dictionary */
 
-    while ( drv.read(buf, 79) != NULL) {
+    while (drv.read (buf, 79) != NULL) {
 
-	h = (unsigned long) hash (buf, strlen (buf));
+	h = (unsigned long) ext_hash (buf, strlen (buf));
 
     }
 

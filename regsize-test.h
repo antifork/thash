@@ -6,4 +6,3 @@
 !(REGSIZE ==2  ) && !(REGSIZE ==1  )
 #error "REGSIZE must be a power of 2, and no longer than 512 (run ./configure --with-regsize=...)"
 #endif
-

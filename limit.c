@@ -55,5 +55,3 @@ getlimit_data ()
     rlimit_data = me.rlim_cur;
 
 }
-
-

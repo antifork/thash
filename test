@@ -1,0 +1,8 @@
+./thash -c hash/fnv.c -a 16 -w english.gray -l
+./thash -c hash/fnv.c -x 16 -w english.gray -l
+./thash -c hash/fnv.c -m 1000000 -w english.gray -s
+./thash -c hash/fnv.c -t 1000000 -w english.gray -s
+./thash -c hash/fnv.c -m 1000000 -r 8 -z 200000 -s
+./thash -c hash/fnv.c -t 1000000 -r 8 -z 200000 -s
+
+  

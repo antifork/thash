@@ -35,36 +35,39 @@
 #ifdef __OpenBSD__
 // The below define is a lie since we are really doing RTLD_LAZY since the
 // system doesn't support RTLD_NOW.
-   #define RTLD_NOW DL_LAZY
+#define RTLD_NOW DL_LAZY
 #endif
 
-/* test */
-#define OPT_SEARCH      1<<0
-#define OPT_FITSIZE     1<<1
-#define OPT_RETRY       1<<2
-#define OPT_COLLISION   1<<3
-#define OPT_BLACKLIST   1<<4
-#define OPT_2D          1<<5
-#define OPT_3D          1<<6
-#define OPT_PERF        1<<7
-
-/* input */
-#define OPT_WORDLIST	1<<10
-#define OPT_RAND	1<<11
-#define OPT_GRAY	1<<12
-
-/* general */
-#define OPT_SEGMENT     1<<20
-#define OPT_DIFF        1<<21
-#define OPT_SEED	1<<22	
-#define OPT_RADIX64     1<<23
 
 /* hash source */
-#define OPT_SOURCE      1<<30
-#define OPT_SHARED      1<<31
+#define OPT_SOURCE      (1<<0)
+#define OPT_SHARED      (1<<1)
 
-#define TEST_MASK	((1<<(10-1))-1)<<0 
-#define INPUT_MASK 	((1<<(10-1))-1)<<10 
-#define OPT_MASK  	((1<<(10-1))-1)<<20
- 
+/* hash filters */
+#define OPT_MASK	(1<<0)
+#define OPT_XOR		(1<<1)
+#define OPT_MOD		(1<<2)
+#define OPT_RETRY	(1<<3)
+
+/* input */
+#define OPT_WORDLIST    (1<<0)
+#define OPT_RAND        (1<<1)
+#define OPT_GRAY        (1<<2)
+
+/* general */
+#define OPT_SEGMENT     (1<<0)
+#define OPT_DIFF        (1<<1)
+#define OPT_SEED        (1<<2)
+#define OPT_RADIX64     (1<<3)
+
+/* test */
+#define OPT_SEARCH      (1<<0)
+#define OPT_TABLE       (1<<1)
+#define OPT_COLLISION   (1<<2)
+#define OPT_BLACKLIST   (1<<3)
+#define OPT_2D          (1<<4)
+#define OPT_3D          (1<<5)
+#define OPT_PERF        (1<<6)
+
+
 #endif /* THASH_H */

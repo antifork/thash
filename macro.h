@@ -74,8 +74,7 @@ if ((p) == NULL )						\
 	FATAL("malloc() virtual memory exhausted\n");		\
 }
 
-
-#define HASH(p) ( drv.w_len ? (unsigned long) hash (p, drv.w_len) : (unsigned long) hash (p, strlen(p)) )
+#define HASH(p) ( drv.w_len ? (unsigned long) ext_hash (p, drv.w_len) : (unsigned long) ext_hash (p, strlen(p)) )
 
 #ifndef STR
 #define STR(a)    # a

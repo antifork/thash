@@ -34,8 +34,8 @@
 
 #include <unistd.h>
 
-enum args { 
-    no_argument=1,
+enum args {
+    no_argument = 1,
     required_argument,
 };
 
@@ -51,7 +51,7 @@ typedef unsigned char REG;
 
 int neo_usage (FILE *, char *, struct neo_options *);
 int neo_showdepend (FILE *, struct neo_options *);
-int neo_getopt (int , char *const[] , struct neo_options *);
+int neo_getopt (int, char *const[], struct neo_options *);
 
 #ifdef NEO_LIBRARY
 

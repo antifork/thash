@@ -59,12 +59,12 @@ hash_3d ()
         z;
 
     if (drv.open (media) == -1)
-        FATAL ("open interface error!");
+	FATAL ("open interface error!");
 
-    drv.reset();
+    drv.reset ();
 
-    while ( drv.read (buf, 79) != NULL) {
-	h = hash (buf, strlen (buf));
+    while (drv.read (buf, 79) != NULL) {
+	h = ext_hash (buf, strlen (buf));
 
 	x = h & X_MASK;
 	y = (h & Y_MASK) >> 11;

@@ -40,33 +40,39 @@ typedef struct {
 typedef struct {
     void *image;
     void *stream;
-    int  size;
-    int  line;
+    int size;
+    int line;
 } fi_stream;
 
 
 typedef struct {
-  int   (*open)  (char *);
-  int   (*reset) ();
-  char *(*read)  (char *, int );
-  int   (*close) (); 
+    int (*open) (char *);
+    int (*reset) ();
+    char *(*read) (char *, int);
+    int (*close) ();
 
 
-  /* fileimage */
-  
-  void *image;  
-  void *stream;
-  int  size;
-  int  fd;
+    /* fileimage */
 
-  /* random gen */
+    void *image;
+    void *stream;
+    int size;
+    int fd;
 
-  int seed;
-  int w_len ;   /* wordlen */
-  int w_max ;   /* limit */
-  int w_read;	/* counter */ 
-  
+    /* random gen */
+
+    int seed;
+    int w_len;			/* wordlen */
+    int w_max;			/* limit */
+    int w_read;			/* counter */
+
 } tdriver;
 
+
+typedef struct {
+    unsigned long (*drv) (char *);
+    unsigned long len;
+    unsigned long mask;
+} hdriver;
 
 #endif /* TYPEDEF_H */

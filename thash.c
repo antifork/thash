@@ -56,48 +56,61 @@ extern int optind,
     optopt;
 
 static struct neo_options opt[] = {
-    {'-', 0, 0, NULL, "hash:"},
-    {'c', required_argument, "c/co", "hash.c",  "hash is a c source"},
-    {'o', required_argument, "o/co", "hash.so", "hash is a shared object (-fPIC)"},
-    {'-', 0, 0, NULL, "input:"},
 
-    {'w', required_argument, "w/wrig", "wordlist", "use wordlist"},
-    {'r', required_argument, "r/wrig", "n", "n-byte random strings. (use ISAAC generator)"},
-    {'g', required_argument, "g/wrig", "n", "n-byte gray-rand strings"},
+    {'-', 0, 0, NULL, "hash:"},
+    {'c', required_argument, "c/co", "hash.c", "hash is a c source"},
+    {'o', required_argument, "o/co", "hash.so", "hash is a shared object (-fPIC)"},
+
+    {'-', 0, 0, NULL, "filters:"},
+    {'a', required_argument, "a/axmt", "bit", "and-mask (lowbits filter)"},
+    {'x', required_argument, "x/axmt", "bit", "xor-folding method"},
+    {'m', required_argument, "m/axmt", "len", "lazy mod mapping"},
+    {'t', required_argument, "t/axmt", "len", "retry method"},
+
+
+    {'-', 0, 0, NULL, "input:"},
+    {'w', required_argument, "w/wrg", "wordlist", "use wordlist"},
+    {'r', required_argument, "r/wrg", "n", "n-byte random strings. (use ISAAC generator)"},
+    {'g', required_argument, "g/wrg", "n", "n-byte gray-rand strings"},
+
 
     {'-', 0, 0, NULL, "options:"},
-    {'m', required_argument, NULL, "Mbyte", "set the memory segment size"},
+    {'y', required_argument, NULL, "Mbyte", "set the memory segment size"},
     {'e', required_argument, NULL, "seed", "set seed for random generator"},
-    {'z', required_argument, NULL, "n",    "set the amount of random words. (10000 default)"},
+    {'z', required_argument, NULL, "n", "set the amount of random words. (10000 default)"},
     {'d', no_argument, NULL, NULL, "yield differential hash (-2 or -3)"},
-    {'x', no_argument, NULL, NULL, "apply radix64 filter to random strings" },
+    {'6', no_argument, NULL, NULL, "apply radix64 filter to random strings"},
 
     {'-', 0, 0, NULL, "test:"},
-    {'b', required_argument, "b/stfl23pb", "bit",  "calc n-xor-folding blacklist (colliding words)"},
-    {'l', required_argument, "l/stfl23pb", "bit",  "calc n-xor-folding collisions"},
-    {'s', required_argument, "s/stfl23pb", "size", "calc fit-table statistics (Lazy mod mapping method)"},
-    {'t', required_argument, "t/stfl23pb", "size", "calc fit-table statistics (Retry method)"},
-    {'f', required_argument, "f/stfl23pb", "hash", "find for hash in wordlist"},
-    {'2', no_argument, "2/stfl23pb", NULL, "present 2d-data for gnuplot, xgobi"},
-    {'3', no_argument, "3/stfl23pb", NULL, "present 3d-data for gnuplot, xgobi"},
-    {'p', no_argument, "p/stfl23pb", NULL, "calc hash performance"},
+    {'b', no_argument, "b/blsf23p", NULL, "calc blacklist (colliding words)"},
+    {'l', no_argument, "l/blsf23p", NULL, "calc collisions"},
+    {'s', no_argument, "s/blsf23p", NULL, "calc fit-table statistics"},
+    {'f', no_argument, "f/blsf23p", NULL, "find hash in wordlist"},
+    {'2', no_argument, "2/blsf23p", NULL, "present 2d-data for gnuplot, xgobi"},
+    {'3', no_argument, "3/blsf23p", NULL, "present 3d-data for gnuplot, xgobi"},
+    {'p', no_argument, "p/blsf23p", NULL, "calc hash performance"},
 
+    {'-', 0, 0, NULL, "general:"},
     {'v', no_argument, NULL, NULL, "print version"},
     {'h', no_argument, NULL, NULL, "print this help"},
-
     {'@', no_argument, NULL, NULL, "show options dependencies"},
-    {'+', 0, "/co", 0 , 0 },
-    {'+', 0, "/wrg", 0, 0 }, 
-    {'+', 0, "/stfl23pb", 0 , 0 },
+
+    {'+', 0, "/co", 0, 0},
+    {'+', 0, "/axmt", 0, 0},
+    {'+', 0, "/wrg", 0, 0},
+    {'+', 0, "/blsf23p", 0, 0},
+    {'+', 0, "ax/blf23p", 0, 0},
+    {'+', 0, "mt/s", 0, 0},
+
     {0, 0, 0, 0, 0}
 };
 
 
 void
-default_settings()
+default_settings ()
 {
 
-   drv.w_max = 10000; 
+    drv.w_max = 10000;
 
 }
 
@@ -115,89 +128,97 @@ main (int argc, char **argv, char **env)
     if (argv[1][0] == '-' && argv[1][1] == '-')
 	FATAL ("%s doesn't support --long-options.\ntype %s -h instead", argv[0], argv[0]);
 
-    default_settings();
+    default_settings ();
 
     environ = env;
 
     while ((es = neo_getopt (argc, argv, opt)) != EOF)
 	switch (es) {
-
-         case 'c':
-             SET (options, OPT_SOURCE);
-             hashsource = strdup (optarg);
-             break;
-         case 'o':
-             SET (options, OPT_SHARED);
-             hashsource = strdup (optarg);
-             break;
-	 case 'w':
-	     SET (options, OPT_WORDLIST);
-	     media =  strdup (optarg); 
+/* hash */
+	 case 'c':
+	     SET (opt_hash, OPT_SOURCE);
+	     hashsource = strdup (optarg);
 	     break;
-
-         case 'r':
-	     SET (options, OPT_RAND);
+	 case 'o':
+	     SET (opt_hash, OPT_SHARED);
+	     hashsource = strdup (optarg);
+	     break;
+/* filters */
+	 case 'a':
+	     SET (opt_filters, OPT_MASK);
+	     bitlen = strtoul (optarg, (char **) NULL, 0);
+	     break;
+	 case 'x':
+	     SET (opt_filters, OPT_XOR);
+	     bitlen = strtoul (optarg, (char **) NULL, 0);
+	     break;
+	 case 'm':
+	     SET (opt_filters, OPT_MOD);
+	     tablen = strtoul (optarg, (char **) NULL, 0);
+	     break;
+	 case 't':
+	     SET (opt_filters, OPT_RETRY);
+	     tablen = strtoul (optarg, (char **) NULL, 0);
+	     break;
+/* input */
+	 case 'w':
+	     SET (opt_input, OPT_WORDLIST);
+	     media = strdup (optarg);
+	     break;
+	 case 'r':
+	     SET (opt_input, OPT_RAND);
 	     drv.w_len = strtoul (optarg, (char **) NULL, 0);
 	     break;
-         case 'g':
-             SET (options, OPT_GRAY);
-             drv.w_len = strtoul (optarg, (char **) NULL, 0);
+	 case 'g':
+	     SET (opt_input, OPT_GRAY);
+	     drv.w_len = strtoul (optarg, (char **) NULL, 0);
 	     break;
-
-         case 'm':
-             SET (options, OPT_SEGMENT);
-             usrsize = strtol (optarg, (char **) NULL, 0);
-             if (mit_bitcount (usrsize) != 1)
-                 FATAL ("segment size must be a power of 2");
-             break;
+/* options */
+	 case 'y':
+	     SET (opt_options, OPT_SEGMENT);
+	     usrsize = strtol (optarg, (char **) NULL, 0);
+	     if (mit_bitcount (usrsize) != 1)
+		 FATAL ("segment size must be a power of 2");
+	     break;
+	 case 'e':
+	     SET (opt_options, OPT_SEED);
+	     drv.seed = strtoul (optarg, (char **) NULL, 0);
+	     break;
+	 case 'z':
+	     drv.w_max = strtoul (optarg, (char **) NULL, 0);
+	     break;
 	 case 'd':
-	     SET (options, OPT_DIFF);
+	     SET (opt_options, OPT_DIFF);
 	     break;
-         case 'e':
-             SET (options, OPT_SEED);
-             drv.seed = strtoul (optarg, (char **) NULL, 0);
-             break;
-        case 'z':
-             drv.w_max = strtoul (optarg, (char **) NULL, 0);
-             break;
-         case 'x':
-             SET (options, OPT_RADIX64);
-             break;
-
-         case 'b':
-             SET (options, OPT_BLACKLIST);
-             bitlen = strtoul (optarg, (char **) NULL, 0);
-             break;
-         case 'l':
-             SET (options, OPT_COLLISION);
-             bitlen = strtoul (optarg, (char **) NULL, 0);
-             break;
-
-         case 's':
-             SET (options, OPT_FITSIZE);
-             tablen = strtoul (optarg, (char **) NULL, 0);
-             break;
-         case 't':
-             SET (options, OPT_RETRY);
-             tablen = strtoul (optarg, (char **) NULL, 0);
-             break;
-
+	 case '6':
+	     SET (opt_options, OPT_RADIX64);
+	     break;
+/* test */
+	 case 'b':
+	     SET (opt_test, OPT_BLACKLIST);
+	     break;
+	 case 'l':
+	     SET (opt_test, OPT_COLLISION);
+	     break;
+	 case 's':
+	     SET (opt_test, OPT_TABLE);
+	     break;
 	 case 'f':
-	     SET (options, OPT_SEARCH);
+	     SET (opt_test, OPT_SEARCH);
 	     findhash = strtoul (optarg, (char **) NULL, 0);
 	     break;
-
 	 case '2':
-	     SET (options, OPT_2D);
+	     SET (opt_test, OPT_2D);
 	     break;
 	 case '3':
-	     SET (options, OPT_3D);
+	     SET (opt_test, OPT_3D);
 	     break;
 	 case 'p':
-	     SET (options, OPT_PERF);
+	     SET (opt_test, OPT_PERF);
 	     break;
+/* general */
 	 case 'v':
-	     PUTS ("thash %s (segment size=%d Mbyte)\n", VERSION,REGSIZE);
+	     PUTS ("thash %s (segment_size=%d Mbyte)\n", VERSION, REGSIZE);
 	     exit (0);
 	     break;
 	 case 'h':
@@ -216,28 +237,25 @@ main (int argc, char **argv, char **env)
     argv += optind;
 
     /* bitlen test */
-
-    bitlen = ( (bitlen <= 32) ?  bitlen : 32 );  
+    bitlen = ((bitlen <= 32) ? bitlen : 32);
 
     /* getting rlimit */
-
     getlimit_data ();
-    
-    /* register (segment) size can't exceed the hardcoded value. REGSIZE */
 
-    regsize = MIN(regsize,usrsize);
+    /* register (segment) size can't exceed the hardcoded value. REGSIZE */
+    regsize = MIN (regsize, usrsize);
 
     if (rlimit_data == RLIM_INFINITY)
 	PUTS ("RLIMIT_DATA         : (infinity)\n");
     else
 	PUTS ("RLIMIT_DATA         : %llu Mbyte\n", (rlimit_data >> 20));
 
-    /* setup input interface */
+    /* setup drivers */
 
-    setup_driver();
+    setup_driver ();
+    setup_hdriver ();
 
     /* removing extension from hash filename */
-
     p = strrchr (hashsource, '.');
 
     if (p != NULL) {
@@ -247,8 +265,7 @@ main (int argc, char **argv, char **env)
     }
 
     /* compiling hash.c if required ... */
-
-    if (TST (options, OPT_SOURCE)) {
+    if (TST (opt_hash, OPT_SOURCE)) {
 
 	PUTS ("compiling           : %s.c ... ", hashsource);
 
@@ -276,16 +293,13 @@ main (int argc, char **argv, char **env)
     hash_register (hashsource);
     PUTS ("(done)\n");
 
-    switch (options & TEST_MASK) {
+    switch (opt_test) {
 
      case OPT_SEARCH:
 	 hash_search ();
 	 break;
-     case OPT_FITSIZE:
+     case OPT_TABLE:
 	 hash_fitest ();
-	 break;
-     case OPT_RETRY:
-	 hash_retry();
 	 break;
      case OPT_COLLISION:
 	 hash_collision ();
