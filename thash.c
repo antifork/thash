@@ -89,7 +89,7 @@ static struct neo_options opt[] = {
 	{'-', 0, 0, NULL, "general:"},
 	{'v', no_argument, NULL, NULL, "print version"},
 	{'h', no_argument, NULL, NULL, "print this help"},
-	{'@', no_argument, NULL, NULL, "show options dependencies"},
+	{'!', no_argument, NULL, NULL, "show options dependencies"},
 
 	{'+', 0, "/co", 0, 0},
 	{'+', 0, "/wrg", 0, 0},
@@ -212,7 +212,7 @@ main(int argc, char **argv, char **env)
 			neo_usage(stderr, "usage: thash [options]", opt);
 			exit(1);
 			break;
-		case '@':
+		case '!':
 			neo_showdepend(stderr, opt);
 			exit(0);
 		case '?':

@@ -1,3 +1,5 @@
+/* $Id$
+*/
 /*
  * neo_options
  *
@@ -35,8 +37,10 @@
 #include <string.h>
 #include <stdarg.h>
 
-static const char cvsid[] = "$cvsid: neo_options.c,v 1.9 2003/05/04 20:18:56 awgn Exp $";
+static const char cvsid[] = "$cvsid: neo_options.c,v 1.10 2003/05/05 00:17:02 awgn Exp $";
 static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
+
+extern char *__progname;
 
 #define   NEO_LIBRARY
 #include "neo_options.h"
@@ -67,18 +71,17 @@ check_neo_options(struct neo_options * n)
 			continue;
 		default:
 			if (REG_BT(reg, (n->opt - '0')))
-				fatal("-%c opt error. option already in use\n", n->opt);
+				fatal("[+] %s: -%c opt error. option already in use.\n", __FUNCTION__ ,n->opt);
 			REG_BS(reg, (n->opt - '0'));
 		}
-
 	return 0;
 }
 
 static int
 compile_optmask(char c, char *s, REG r[], REG m[])
 {
-
-	int ret = 0, slash = 0, i;
+        REG reg[RSIZE];
+	int ret = 0, sep = 0, type=0, i;
 
 	REG_CLR(r, RSIZE);
 	REG_CLR(m, RSIZE);
@@ -88,16 +91,39 @@ compile_optmask(char c, char *s, REG r[], REG m[])
 
 	for (i = 0; s[i] != 0; i++) {
 		switch (s[i]) {
+		case '|':
+			type = OR_MASK;
+                        if (sep != 0)
+                                fatal("[+] %s: parse error at \"%s\" (or-mask).\n", __FUNCTION__,s);  /* error */
+			sep++;
+			continue;
 		case '/':
-			if (slash != 0)
-				fatal("-%c \"%s\" error bad optmask\n", c, s);	/* error */
-			slash++;
+			type = AND_MASK;
+			if (sep != 0)
+				fatal("[+] %s: -%c parser error at \"%s\" (and-mask).\n", __FUNCTION__,c, s);	/* error */
+			sep++;
 			continue;
 		default:
-			REG_BS((slash == 0 ? r : m), (s[i] - '0'));
-			ret |= (slash == 0 ? 2 : 1);
+			REG_BS((sep == 0 ? r : m), (s[i] - '0'));
+			ret |= (sep == 0 ? 2 : 1);
 		}
 	}
+
+	/* mask integrity check */
+
+	if ( type == AND_MASK ) {
+		REG_CPY(m,reg,RSIZE);
+		REG_AND(r,reg,RSIZE);
+		if (!REG_CMP(r,reg,RSIZE)) 
+			fatal("[+] %s: -%c \"%s\" bogus and-mask.\n", __FUNCTION__,c, s); /* error */
+	}
+
+        if ( type == OR_MASK && !REG_ISNULL(r,RSIZE)) {
+                REG_CPY(m,reg,RSIZE);
+                REG_AND(r,reg,RSIZE);
+                if (REG_CMP(r,reg,RSIZE))
+                        fatal("[+] %s: \"%s\" bogus or-mask.\n", __FUNCTION__,s); /* error */
+        }
 
 	return (ret);
 }
@@ -133,8 +159,8 @@ compile_optstring(struct neo_options * n)
 static char spaces[32] = { [0 ... 31] = ' '};
 
 /***
-public functions
-***/
+ *** public functions
+ ***/
 
 int
 neo_usage(FILE * f, char *h, struct neo_options * n)
@@ -142,10 +168,14 @@ neo_usage(FILE * f, char *h, struct neo_options * n)
 	int br = 1;
 
 	if (n == NULL)
-		fatal("NULL pointer?\n");
+		fatal("[+] %s: struct neo_options is a NULL pointer?\n",__FUNCTION__);
 
 	/* print header */
-	fprintf(f, "%s\n", h);
+
+	if (h != NULL)
+		fprintf(f, "%s\n", h);
+	else
+		fprintf(f, "usage: %s [OPTIONS]\n",__progname);
 
 	for (; n->opt != 0; n++)
 		switch (n->opt) {
@@ -169,19 +199,18 @@ neo_usage(FILE * f, char *h, struct neo_options * n)
 	return 0;
 }
 
-
 int
 neo_showdepend(FILE * f, struct neo_options * n)
 {
 
 	if (n == NULL)
-		fatal("NULL pointer?\n");
+		fatal("[+] %s: struct neo_options is a NULL pointer?\n",__FUNCTION__);
 
-	fprintf(f, "option dependencies:\n");
+	fprintf(f, "%s options dependencies:\n",__progname);
 	for (; n->opt != 0; n++)
 		switch (n->opt) {
 		case '-':
-		case '@':
+		case '!':
 			continue;
 		case '+':
 			if (n->depend != NULL)
@@ -193,7 +222,6 @@ neo_showdepend(FILE * f, struct neo_options * n)
 		}
 	return 0;
 }
-
 
 int
 neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
@@ -209,18 +237,27 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
 		optstring = compile_optstring(n);
 	}
 
-	if (mode == OPT_NOW) {	/* OPT_NOW */
-		/* check all options concistency */ 
-		while (( c = getopt(argc, argv, optstring))!= EOF )
-			REG_BS(master, (c - '0'));
-			optind = 1;
-	}
-	else {		/* OPT_DELAYED */
-		c = getopt(argc, argv, optstring);
-		if (c != EOF) {
-			REG_BS(master, (c - '0'));
-			return (c);
-		}
+	switch(mode) {
+	case OPT_NOW: /* check all options concistency */
+                while (( c = getopt(argc, argv, optstring))!= EOF )     {
+
+                        if ( c == 'h' ) { // stop the check now 
+                                optind=1;
+                                return (c);
+                        }
+                        REG_BS(master, (c - '0'));
+                }
+                optind = 1;
+		break;
+	case OPT_DELAYED:
+                c = getopt(argc, argv, optstring);
+                if (c != EOF) {
+                        REG_BS(master, (c - '0'));
+                        return (c);
+                }
+		break;
+	default:
+		fatal("[+] %s: unknown mode.\n", __FUNCTION__); 	
 	}
 
 	for (; n->opt != 0; n++) {
@@ -256,7 +293,8 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
 			/* obligation(or) mask check */
 			REG_AND(mask, temp, RSIZE);
 			if (REG_ISNULL(temp, RSIZE))
-				fatal("obligation mask \"%s\" error. (missing options?)\n", n->depend);
+				fatal("[!] %s: or-mask \"%s\" error. (missing options?)\n", 
+					__FUNCTION__,n->depend);
 			continue;
 
 			/* (and) mask check */
@@ -273,7 +311,8 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
 			REG_AND(mask, temp, RSIZE);
 
 			if (!REG_CMP(temp, opts, RSIZE)) /* error */
-				fatal("-%c optmask \"%s\" error. (mismatch dependency?)\n", n->opt, n->depend);
+				fatal("[!] %s: -%c and-mask \"%s\" error. (mismatch dependency?)\n", 
+					__FUNCTION__ ,n->opt, n->depend);
 			continue;
 		}
 
@@ -286,29 +325,44 @@ neo_getopt(int argc, char *const argv[], struct neo_options * n, int mode)
 
 struct neo_options opt[] = {
 	{'-', 0, 0, NULL, "first section"},
-	{'a', no_argument, "a/a", NULL, "test"},
+	{'a', no_argument, "a/ab", NULL, "test"},
+//	{'a', no_argument, "a/cb", NULL, "test"}, <- bugus and-mask (never true) (recognized by mask compiler) 
 	{'b', no_argument, "bc/bc", NULL, "test.."},
 	{'-', 0, 0, NULL, "second section"},
 	{'c', required_argument, "cd/cd", "int", "test..."},
 	{'d', required_argument, "d/d", "u_int", "test...."},
 	{'e', no_argument, "", NULL, "---"},
+	{'z', no_argument, "", NULL, "test....."},
 	{'h', no_argument, "", NULL, "print help"},
-	{'@', no_argument, NULL, NULL, "show dependencies"},
-	{'+', 0, "a/de", 0},
-	{'+', 0, "/dz", 0},
+	{'!', no_argument, NULL, NULL, "show dependencies"},
+	{'+', 0, "az|de", 0},
+//	{'+', 0, "a|ade", 0}, <- bogus or-mask (always true) (recognized by mask compiler)
+	{'+', 0, "|dz", 0},
 	{0, 0, 0, 0}
 };
 
 int
 main(int argc, char **argv)
 {
-
 	int i;
 
-	if (argc < 2) {
-		neo_usage(stderr, "usage: neo_getopt model usage", opt);
-		exit(1);
-	}
+//	int
+//	neo_getopt(int argc, char **argv, struct neo_options array[], int MODE);
+//	
+//	argc, argv: number and command line arguments passed to main.
+//	struct neo_options array[]: array of config structure.
+//
+//	MODE: can be either OPT_NOW or OPT_DELAYED.  
+//
+//	     *OPT_NOW    : check all options given in a single step.
+//	      OPT_DELAYED: check a single option per call (used for multiple iterance).
+//
+//     *BUGS: If an or-mask "|xxx" was defined (pure obligation or-mask), the 
+//	      neo_getopt(...,OPT_NOW) failed when no options are passed to the command line. 
+//	      To avoid this beaviour and permit a subsequent usage+exit call, when -h is given, 
+//	      we implicit assume that masks check are not relevant, and neo_getopt() is 
+//	      forced to return.  
+//	       
 
 	printf("OPT_NOW ...\n");
 	neo_getopt(argc, argv, opt, OPT_NOW);
@@ -320,10 +374,26 @@ main(int argc, char **argv)
 			exit(-1);
 			break;
 		case 'h':
-			neo_usage(stderr, "usage: neo_getopt model usage", opt);
+			// int
+			// neo_usage(FILE *, char *custom_message, struct neo_options array[]); 
+			//
+			// print the usage() program in a classic fashion.
+			// if custom_message is NULL, a predefined header is printed.
+			//
+			// ie:
+			// neo_usage(stderr, "usage: prog blhablhabblha", opt);
+
+			neo_usage(stderr, NULL, opt);
 			exit(1);
 			break;
-		case '@':
+		case '!':
+			// int
+			// neo_showdepend(FILE *, struct neo_options array[]);
+			//
+			// show the dependencies, printing (and) and (or) mask in a 
+			// classic fashion.
+			//
+	
 			neo_showdepend(stderr, opt);
 			exit(1);
 			break;

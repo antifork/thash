@@ -59,6 +59,9 @@ int neo_getopt (int , char *const[] , struct neo_options *, int);
 
 #ifdef NEO_LIBRARY
 
+#define AND_MASK        1
+#define OR_MASK         2
+
 #define bit         >>3
 #define kbit        <<7
 #define mbit        <<17
