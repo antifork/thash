@@ -58,8 +58,17 @@ int neo_usage (FILE *, char *, struct neo_options *);
 int neo_showdepend (FILE *, struct neo_options *);
 int neo_getopt (int , char *const[] , struct neo_options *, int);
 
-#ifdef NEO_LIBRARY
+#ifndef NEO_LIBRARY
 
+extern int neopterr;     		/* if error message should be printed */
+extern int neoptind;               	/* index into parent argv vector */
+extern int neoptopt;                   	/* character checked for validity */
+extern int neoptreset;                 	/* reset neo_getopt */
+extern char *neoptarg;                 	/* argument associated with option */
+
+extern int neoverbose;			/* control the otuput fashoin:0 = classic, 1 = verbose */
+
+#else
 #define AND_MASK        1
 #define OR_MASK         2
 

@@ -51,7 +51,7 @@ static const char cvsid[] = "$Id$";
 #include "prototype.h"
 #include "neo_options.h"
 
-extern char *optarg;
+extern char *neoptarg;
 extern int optind, opterr, optopt;
 
 static struct neo_options opt[] = {
@@ -126,55 +126,55 @@ main(int argc, char **argv, char **env)
 			/* hash */
 		case 'c':
 			SET(opt_hash, OPT_SOURCE);
-			hashsource = strdup(optarg);
+			hashsource = strdup(neoptarg);
 			break;
 		case 'o':
 			SET(opt_hash, OPT_SHARED);
-			hashsource = strdup(optarg);
+			hashsource = strdup(neoptarg);
 			break;
 			/* filters */
 		case 'a':
 			SET(opt_filters, OPT_MASK);
-			bitlen = strtoul(optarg, (char **) NULL, 0);
+			bitlen = strtoul(neoptarg, (char **) NULL, 0);
 			break;
 		case 'x':
 			SET(opt_filters, OPT_XOR);
-			bitlen = strtoul(optarg, (char **) NULL, 0);
+			bitlen = strtoul(neoptarg, (char **) NULL, 0);
 			break;
 		case 'm':
 			SET(opt_filters, OPT_MOD);
-			tablen = strtoul(optarg, (char **) NULL, 0);
+			tablen = strtoul(neoptarg, (char **) NULL, 0);
 			break;
 		case 't':
 			SET(opt_filters, OPT_RETRY);
-			tablen = strtoul(optarg, (char **) NULL, 0);
+			tablen = strtoul(neoptarg, (char **) NULL, 0);
 			break;
 			/* input */
 		case 'w':
 			SET(opt_input, OPT_WORDLIST);
-			media = strdup(optarg);
+			media = strdup(neoptarg);
 			break;
 		case 'r':
 			SET(opt_input, OPT_RAND);
-			drv.w_len = strtoul(optarg, (char **) NULL, 0);
+			drv.w_len = strtoul(neoptarg, (char **) NULL, 0);
 			break;
 		case 'g':
 			SET(opt_input, OPT_GRAY);
-			drv.w_len = strtoul(optarg, (char **) NULL, 0);
+			drv.w_len = strtoul(neoptarg, (char **) NULL, 0);
 			break;
 			/* options */
 		case 'y':
 			SET(opt_options, OPT_SEGMENT);
-			usrsize = strtol(optarg, (char **) NULL, 0);
+			usrsize = strtol(neoptarg, (char **) NULL, 0);
 			if (mit_bitcount(usrsize) != 1)
 				FATAL("segment size must be a power of 2");
 			break;
 		case 'e':
 			SET(opt_options, OPT_SEED);
-			drv.seed = strtoul(optarg, (char **) NULL, 0);
+			drv.seed = strtoul(neoptarg, (char **) NULL, 0);
 			break;
 		case 'z':
-			drv.w_max = strtoul(optarg, (char **) NULL, 0);
+			drv.w_max = strtoul(neoptarg, (char **) NULL, 0);
 			break;
 		case 'd':
 			SET(opt_options, OPT_DIFF);
@@ -194,7 +194,7 @@ main(int argc, char **argv, char **env)
 			break;
 		case 'f':
 			SET(opt_test, OPT_SEARCH);
-			findhash = strtoul(optarg, (char **) NULL, 0);
+			findhash = strtoul(neoptarg, (char **) NULL, 0);
 			break;
 		case '2':
 			SET(opt_test, OPT_2D);
