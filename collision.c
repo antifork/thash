@@ -47,52 +47,44 @@
 #include "prototype.h"
 #include "macro.h"
 
-struct hlist {
-     	unsigned long hash;
-	unsigned char *zero;
-};            
+#if defined(HAVE_BSD_SYS_QUEUE_H)
+#include <sys/queue.h>
+#else
+#include <missing/sys/queue.h>
+#endif
+
+SLIST_HEAD(hlist, hentry);
+
+struct hentry {
+	unsigned long hash;
+	     SLIST_ENTRY(hentry) list;
+};
 
 int
 hash_collision()
 {
-	unsigned char *p;
-	unsigned long h;
-	struct hlist *hlist;
-	unsigned long col;
-	unsigned long total_len;
-	unsigned long segment_len;
-	unsigned long bitmask;
-	int i, j;
+	unsigned char *p, **zero;
+	struct hlist *hl;
+	struct hentry *he, *helist;
+	unsigned long sbit, total_len, segment_len, bitmask;
+	int i, j, coll, steps, z;
 
 	if (drv.open(media) == -1)
 		FATAL("open interface error!");
 
-	col = 0;
+	coll = 0;
 	bitmask = (bitlen == 32 ? -1 : (1 << bitlen) - 1);
 	total_len = ((bitlen > 23) ? 1 << (bitlen - 23) : 1);
 
+	/* half size of  rlimit_data or regsize */
 	segment_len = MIN(regsize, total_len);
 	if (rlimit_data != RLIM_INFINITY)
-		segment_len = MIN(rlimit_data >> 21, segment_len);	/* half size of
-									 * rlimit_data or
-									 * regsize */
-
-	hlist = (struct hlist *)malloc(drv.w_max * sizeof(struct hlist));
-
-	if (hlist == NULL)
-		FATAL("malloc() irrecoverable error");
+		segment_len = MIN(rlimit_data >> 21, segment_len);
 
 	drv.reset();		/* resetting interface */
 
-	for (j = 0; j < drv.w_max; j++) {
-		if (drv.read(buf, 79) == NULL)
-			FATAL("irrecoverable error");
-
-		hlist[j].hash = hash.drv(buf);
-		hlist[j].zero = NULL;
-	}
-
-	drv.close();		/* close input interface */
+	helist = (struct hentry *) malloc(drv.w_max * sizeof(struct hentry));
+	zero = (unsigned char **) calloc(drv.w_max, sizeof(unsigned char *));
 
 	do {
 		p = calloc(segment_len, 1 Mbyte);
@@ -102,46 +94,63 @@ hash_collision()
 	if (p == NULL)
 		FATAL("calloc() irrecoverable error");
 
-	PUTS("global register-size: %lu Mbyte (required for %lu-bit mask)\n", total_len, bitlen);
+	steps = MAX(total_len / segment_len, 1);
+	for (sbit = 33, i = steps; i != 0; i >>= 1)
+		sbit--;
+
+	hl = (struct hlist *) malloc(steps * sizeof(struct hlist));
+
+	if (hl == NULL || zero == NULL || helist == NULL)
+		FATAL("malloc() irrecoverable error");
+
+	for (j = 0; j < drv.w_max; j++) {
+		if (drv.read(buf, 79) == NULL)
+			FATAL("irrecoverable error");
+
+		helist[j].hash = hash.drv(buf);
+
+		SLIST_INSERT_HEAD(hl + (helist[j].hash >> sbit),
+				  helist + j, list);
+	}
+
+	drv.close();		/* close input interface */
+
+	PUTS("global register-size: %lu Mbyte (required for %lu-bit mask)\n",
+	     total_len, bitlen);
 	PUTS("segment-size        : %lu Mbyte\n", segment_len);
 	PUTS("bitlen              : %lu\n", bitlen);
 	PUTS("hash-bitmask        : 0x%lx\n", bitmask);
 
-	for (i = 0; i < MAX(total_len / segment_len, 1); i++) {
+	for (i = 0; i < steps; i++) {
 
-		PUTS("step # %d/%d   \r", i + 1, (int) (total_len / segment_len));
+		PUTS("step # %d/%d   \r", i + 1, steps);
 
-		if (i > 0)
-			for (j = 0; j < drv.w_max; j++) {
-				if (hlist[j].zero == NULL)
-					continue;
-				
-				*hlist[j].zero = 0;
-				hlist[j].zero = NULL;
-			}                        
-		
+		z = 0;
+
 		/* processing the dictionary */
-		for (j = 0; j < drv.w_max; j++) {
+		SLIST_FOREACH(he, hl + i, list) {
+			if (TST_BIT(p, i * (segment_len Mbyte), he->hash))
+				coll++;
 
-			h = hlist[j].hash;
+			SET_BIT(p, i * (segment_len Mbyte), he->hash);
 
-			if (CHECK_BOUND(i * (segment_len Mbyte), h >> 3, (i + 1) * (segment_len Mbyte) - 1)) {
-				if (TST_BIT(p, i * (segment_len Mbyte), h))
-					col++;
-
-				SET_BIT(p, i * (segment_len Mbyte), h);
-				
-				hlist[j].zero = BASE_PTR(p, i * (segment_len Mbyte), h);
-			}
+			zero[z++] = BASE_PTR(p, i * (segment_len Mbyte),
+					     he->hash);
 		}
+
+		/* reset memory */
+		for (j = 0; j < z; j++)
+			*zero[j] = 0;
 
 		/* NEXT */
 	}
 
-	free(hlist);
+	free(helist);
+	free(hl);
+	free(zero);
 	free(p);
-	PUTS("total collisions    : %lu/%d\n", col, drv.w_max);
+	PUTS("total collisions    : %d/%d\n", coll, drv.w_max);
 
-	return (col);
+	return (coll);
 
 }
