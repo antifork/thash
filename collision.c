@@ -47,12 +47,17 @@
 #include "prototype.h"
 #include "macro.h"
 
+struct hlist {
+     	unsigned long hash;
+	unsigned char *zero;
+};            
+
 int
 hash_collision()
 {
 	unsigned char *p;
 	unsigned long h;
-	unsigned long *hlist;
+	struct hlist *hlist;
 	unsigned long col;
 	unsigned long total_len;
 	unsigned long segment_len;
@@ -72,7 +77,7 @@ hash_collision()
 									 * rlimit_data or
 									 * regsize */
 
-	hlist = (unsigned long *) malloc(drv.w_max * sizeof(unsigned long));
+	hlist = (struct hlist *)malloc(drv.w_max * sizeof(struct hlist));
 
 	if (hlist == NULL)
 		FATAL("malloc() irrecoverable error");
@@ -83,18 +88,19 @@ hash_collision()
 		if (drv.read(buf, 79) == NULL)
 			FATAL("irrecoverable error");
 
-		hlist[j] = hash.drv(buf);
+		hlist[j].hash = hash.drv(buf);
+		hlist[j].zero = NULL;
 	}
 
 	drv.close();		/* close input interface */
 
 	do {
-		p = malloc(segment_len Mbyte);
+		p = calloc(segment_len, 1 Mbyte);
 	}
 	while (p == NULL && (segment_len >>= 1));
 
 	if (p == NULL)
-		FATAL("malloc() irrecoverable error");
+		FATAL("calloc() irrecoverable error");
 
 	PUTS("global register-size: %lu Mbyte (required for %lu-bit mask)\n", total_len, bitlen);
 	PUTS("segment-size        : %lu Mbyte\n", segment_len);
@@ -104,17 +110,28 @@ hash_collision()
 	for (i = 0; i < MAX(total_len / segment_len, 1); i++) {
 
 		PUTS("step # %d/%d   \r", i + 1, (int) (total_len / segment_len));
-		memset(p, 0, segment_len Mbyte);
 
+		if (i > 0)
+			for (j = 0; j < drv.w_max; j++) {
+				if (hlist[j].zero == NULL)
+					continue;
+				
+				*hlist[j].zero = 0;
+				hlist[j].zero = NULL;
+			}                        
+		
 		/* processing the dictionary */
 		for (j = 0; j < drv.w_max; j++) {
 
-			h = hlist[j];
-			if (CHECK_BOUND(i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
-				if TST_BIT
-					(p, i * (segment_len Mbyte) + 1, h) col++;
+			h = hlist[j].hash;
 
-				SET_BIT(p, i * (segment_len Mbyte) + 1, h);
+			if (CHECK_BOUND(i * (segment_len Mbyte), h >> 3, (i + 1) * (segment_len Mbyte) - 1)) {
+				if (TST_BIT(p, i * (segment_len Mbyte), h))
+					col++;
+
+				SET_BIT(p, i * (segment_len Mbyte), h);
+				
+				hlist[j].zero = BASE_PTR(p, i * (segment_len Mbyte), h);
 			}
 		}
 
