@@ -1,7 +1,7 @@
 /*
  * neo_options
  * 
- * Copyright (c) 2002 Bonelli Nicola <bonelli@blackhats.it>
+ * Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>
  *
  * All rights reserved.
  * 

@@ -2,7 +2,7 @@
  * All rights reserved.
  * $Id$
  *
- * Copyright (c) 2001 Nicola Bonelli <bonelli@blackhats.it>
+ * Copyright (c) 2001 Nicola Bonelli <bonelli@antifork.org>
  *
  * All rights reserved.
  *

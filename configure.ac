@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT([thash],[1],[bonelli@blackhats.it])
+AC_INIT([thash],[1],[bonelli@antifork.org])
 AC_CONFIG_SRCDIR([thash.h])
 AC_CONFIG_HEADER([config.h])
 

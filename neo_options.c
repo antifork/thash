@@ -1,7 +1,7 @@
 /*
  * neo_options
  *
- * Copyright (c) 2002 Bonelli Nicola <bonelli@blackhats.it>
+ * Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>
  *
  * All rights reserved.
  *
@@ -34,7 +34,7 @@
 #include <string.h>
 
 #define  CVSID          "$Id$"
-#define  AUTHORS        "Copyright (c) 2002 Bonelli Nicola <bonelli@blackhats.it>"
+#define  AUTHORS        "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>"
 #define  VERSION        "1.1"
 
 #define   NEO_LIBRARY
