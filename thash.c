@@ -62,12 +62,12 @@ static struct neo_options opt[] = {
     {'-', 0, 0, NULL, "input:"},
 
     {'w', required_argument, "w/wrig", "wordlist", "use wordlist"},
-    {'r', required_argument, "r/wrig", "n", "n-byte random strings. use ISAAC generator"},
+    {'r', required_argument, "r/wrig", "n", "n-byte random strings. (use ISAAC generator)"},
     {'g', required_argument, "g/wrig", "n", "n-byte gray-rand strings"},
 
     {'-', 0, 0, NULL, "options:"},
     {'m', required_argument, NULL, "Mbyte", "set the memory segment size"},
-    {'e', required_argument, NULL, "seed", "set seed for built-in rand()"},
+    {'e', required_argument, NULL, "seed", "set seed for random generator"},
     {'z', required_argument, NULL, "n",    "set the amount of random words. (10000 default)"},
     {'d', no_argument, NULL, NULL, "yield differential hash (-2 or -3)"},
     {'x', no_argument, NULL, NULL, "apply radix64 filter to random strings" },
@@ -87,7 +87,7 @@ static struct neo_options opt[] = {
 
     {'@', no_argument, NULL, NULL, "show options dependencies"},
     {'+', 0, "/co", 0 , 0 },
-    {'+', 0, "/wrigx", 0, 0 }, 
+    {'+', 0, "/wrg", 0, 0 }, 
     {'+', 0, "/stfl23pb", 0 , 0 },
     {0, 0, 0, 0, 0}
 };
