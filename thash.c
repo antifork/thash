@@ -222,8 +222,8 @@ main(int argc, char **argv, char **env)
 			break;
 		}
 
-	argc -= optind;
-	argv += optind;
+	argc -= neoptind;
+	argv += neoptind;
 
 	/* bitlen test */
 	bitlen = ((bitlen <= 32 && bitlen ) ? bitlen : 32);
