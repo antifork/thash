@@ -49,8 +49,8 @@ exit(1);                                                                \
 }
 
 #define PUTS(f,arg...)  ({                                              \
-fprintf(stdout,f,## arg);                                               \
-fflush (stdout);                                                        \
+fprintf(stderr,f,## arg);                                               \
+fflush (stderr);                                                        \
 })
 
 #ifdef  EADBUG

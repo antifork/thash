@@ -67,7 +67,7 @@ hash_2d ()
 	x = h & X_MASK;
 	y = (h & Y_MASK) >> 8;
 
-	PUTS ("%lu %lu\n", x, y);
+	printf ("%lu %lu\n", x, y);
 
     }
 

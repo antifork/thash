@@ -70,7 +70,7 @@ hash_3d ()
 	y = (h & Y_MASK) >> 11;
 	z = (h & Z_MASK) >> 22;
 
-	PUTS ("%lu %lu %lu\n", x, y, z);
+	printf ("%lu %lu %lu\n", x, y, z);
 
     }
 
