@@ -96,10 +96,10 @@ hash_collision()
 		FATAL("calloc() irrecoverable error");
 
 	steps = MAX(total_len / segment_len, 1);
-	for (sbit = 33, i = steps; i != 0; i >>= 1)
-		sbit--;
+	for (sbit = 22, i = segment_len; i != 0; i >>= 1)
+		sbit++;
 
-	hl = (struct hlist *) malloc(steps * sizeof(struct hlist));
+	hl = (struct hlist *) calloc(steps, sizeof(struct hlist));
 
 	if (hl == NULL || zero == NULL || helist == NULL)
 		FATAL("malloc() irrecoverable error");
