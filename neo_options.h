@@ -54,9 +54,9 @@ struct neo_options {
 
 typedef unsigned char REG;
 
-int neo_usage (FILE *, char *, struct neo_options *);
-int neo_showdepend (FILE *, struct neo_options *);
-int neo_getopt (int , char *const[] , struct neo_options *, int);
+int neo_usage (FILE *, char *, const struct neo_options *);
+int neo_showdepend (FILE *, const struct neo_options *);
+int neo_getopt (int , char *const[] , const struct neo_options *, int);
 
 #ifndef NEO_LIBRARY
 

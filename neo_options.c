@@ -37,7 +37,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-static const char cvsid[] = "$cvs: neo_options.c,v 1.15 2003/05/06 00:12:30 awgn Exp $";
+static const char cvsid[] = "$cvsid: neo_options.c,v 1.16 2003/05/06 01:24:12 awgn Exp $";
 static const char copyright[] = "Copyright (c) 2002 Bonelli Nicola <bonelli@antifork.org>";
 
 extern char *__progname;
@@ -130,11 +130,11 @@ check_optmask(char c, char *s)
 			warn("\n[+] %s: -%c opt \"%s\" mask error. bogus or-mask", 
 				__FUNCTION__, c, s);	/* error */
 	}
-	return 0;
+	return (0);
 }
 
 static int
-check_options(struct neo_options * n)
+check_options(const struct neo_options * n)
 {
 	REG reg[RSIZE];
 	int gerr = 0, err = 0;
@@ -171,7 +171,7 @@ check_options(struct neo_options * n)
 		fatal("\n[+] %s: %d %s encontered. exit forced.\n", 
 			__FUNCTION__, gerr, (gerr == 1 ? "error" : "errors"));
 
-	return 0;
+	return (0);
 }
 
 static int
@@ -205,9 +205,9 @@ compile_optmask(char c, char *s, REG r[], REG m[])
 
 
 static char *
-compile_optstring(struct neo_options * n)
+compile_optstring(const struct neo_options * n)
 {
-	struct neo_options *m;
+	const struct neo_options *m;
 	char *op;
 	int l = 0;
 
@@ -237,7 +237,7 @@ static char spaces[32] = {[0 ... 31] = ' '};
  ***/
 
 int
-neo_usage(FILE * f, char *h, struct neo_options * n)
+neo_usage(FILE * f, char *h, const struct neo_options * n)
 {
 	int br = 1;
 
@@ -274,7 +274,7 @@ neo_usage(FILE * f, char *h, struct neo_options * n)
 }
 
 int
-neo_showdepend(FILE * f, struct neo_options * n)
+neo_showdepend(FILE * f, const struct neo_options * n)
 {
 
 	if (n == NULL)
@@ -347,7 +347,7 @@ char *neoptarg;			/* argument associated with option */
 static char *rcsid __attribute__((unused)) = "$OpenBSD: getopt.c,v 1.4 2002/12/08 22:57:14 millert Exp $";
 
 int
-neo_getopt(int nargc, char *const nargv[], struct neo_options * n, int mode)
+neo_getopt(int nargc, char *const nargv[], const struct neo_options * n, int mode)
 {
 	REG opts[RSIZE], mask[RSIZE], temp[RSIZE];
 	static REG master[RSIZE];
@@ -417,7 +417,6 @@ restart:
 /* <--- end of Copyright (c) 1987, 1993, 1994 The Regents of the University of California. ---> */
 
 ret_control:
-
 	switch (mode) {
 	case OPT_NOW:
 		if (ret == 'h') {
@@ -497,21 +496,21 @@ ret_control:
 struct neo_options opt[] = {
 	{'-', 0, 0, NULL, "first section"},
 	{'a', no_argument, "a/ab", NULL, "test"},
-	//{'a', no_argument, "a/ab", NULL, "test"}, //<--a is already in use.
-	// {'m', no_argument, "a/cb", NULL, "test"}, //<-bugus and - mask(never true)
-	// {'k', no_argument, "a|cb", NULL, "test"}, //<-wrong separator:and - mask format is "a/ab"
+     // {'a', no_argument, "a/ab", NULL, "test"}, //<--a is already in use.
+     // {'m', no_argument, "a/cb", NULL, "test"}, //<-bugus and - mask(never true)
+     // {'k', no_argument, "a|cb", NULL, "test"}, //<-wrong separator:and - mask format is "a/ab"
 	{'b', no_argument, "bc/bc", NULL, "test.."},
 	{'-', 0, 0, NULL, "second section"},
 	{'c', required_argument, "cd/cd", "int", "test..."},
 	{'d', required_argument, "d/d", "u_int", "test...."},
-	//{'l', no_argument, "a/sd/d", NULL, "---"}, //<-parse error
+     // {'l', no_argument, "a/sd/d", NULL, "---"}, //<-parse error
 	{'e', no_argument, "", NULL, "---"},
 	{'z', no_argument, "", NULL, "test....."},
 	{'h', no_argument, "", NULL, "print help"},
 	{'!', no_argument, NULL, NULL, "show dependencies"},
 	{'+', 0, "az|de", 0},
-	//{'+', 0, "a|ade", 0}, //<-bogus or - mask(always true)
-	// {'+', 0, "a/bc", 0}, //<-wrong separator:or - mask format is "x|yz"
+     // {'+', 0, "a|ade", 0}, //<-bogus or - mask(always true)
+     // {'+', 0, "a/bc", 0}, //<-wrong separator:or - mask format is "x|yz"
 	{'+', 0, "|dz", 0},
 	{0, 0, 0, 0}
 };
