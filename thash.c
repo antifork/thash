@@ -96,7 +96,6 @@ static struct neo_options opt[] = {
     {'@', no_argument, NULL, NULL, "show options dependencies"},
 
     {'+', 0, "/co", 0, 0},
-    {'+', 0, "/axmt", 0, 0},
     {'+', 0, "/wrg", 0, 0},
     {'+', 0, "/blsf23p", 0, 0},
     {'+', 0, "ax/blf23p", 0, 0},

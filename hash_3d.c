@@ -44,6 +44,7 @@
 #include "global.h"
 #include "prototype.h"
 #include "macro.h"
+#include "thash.h"
 
 #define X_MASK  0x7ffL		/* 00000000000000000000011111111111 */
 #define Y_MASK  0x3ff800L	/* 00000000001111111111100000000000 */
@@ -53,10 +54,12 @@
 void
 hash_3d ()
 {
-    unsigned long h;
-    unsigned long x,
+    unsigned long h,
+        x,
         y,
         z;
+    static unsigned long sh;
+
 
     if (drv.open (media) == -1)
 	FATAL ("open interface error!");
@@ -64,11 +67,21 @@ hash_3d ()
     drv.reset ();
 
     while (drv.read (buf, 79) != NULL) {
+
 	h = ext_hash (buf, strlen (buf));
 
-	x = h & X_MASK;
-	y = (h & Y_MASK) >> 11;
-	z = (h & Z_MASK) >> 22;
+	if (opt_options & OPT_DIFF) {
+	    x = ((h - sh) & X_MASK);
+	    y = ((h - sh) & Y_MASK) >> 11;
+	    z = ((h - sh) & Z_MASK) >> 22;
+	    sh = h;
+
+	}
+	else {
+	    x = (h & X_MASK);
+	    y = (h & Y_MASK) >> 11;
+	    z = (h & Z_MASK) >> 22;
+	}
 
 	printf ("%lu %lu %lu\n", x, y, z);
 

@@ -39,6 +39,13 @@
 #include "macro.h"
 
 unsigned long
+__hash_pure (char *h)
+{
+    return (HASH (h));
+}
+
+
+unsigned long
 __hash_mask (char *h)
 {
     return (HASH (h) & hash.mask);
@@ -101,6 +108,9 @@ setup_hdriver ()
 {
 
     switch (opt_filters) {
+     case 0:
+         hash.drv = __hash_pure;
+         break;
      case OPT_MASK:
 	 PUTS ("drv:hash method     : mask\n");
 	 hash.drv = __hash_mask;

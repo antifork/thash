@@ -17,6 +17,9 @@ int cc_call _P ((const char *source));
 /* collision.c */
 int hash_collision _P ((void));
 
+/* blacklist.c */
+int hash_blacklist _P ((void));
+
 /* dlibrary.c */
 void hash_register _P ((char *so));
 
@@ -63,6 +66,9 @@ int neo_getopt _P ((int argc, char *const argv[], struct neo_options * n));
 int difftimeofday _P ((struct timeval now, struct timeval old, elapsed_val * diff));
 void hash_perf _P ((void));
 
+/* hdriver.c */
+
+int setup_hdriver _P((void));
 
 /* search.c */
 void hash_search _P ((void));
