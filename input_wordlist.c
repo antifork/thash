@@ -48,6 +48,7 @@ openw(const char *pathname)
 
 	struct stat f_stat;
 	int size;
+	char *p;
 
 	if (stat(pathname, &f_stat) == -1) {
 		fprintf(stderr, "open_fi::stat(%s) %s\n", pathname, strerror(errno));
@@ -65,6 +66,14 @@ openw(const char *pathname)
 	if (drv.image == MAP_FAILED) {
 		perror("open_fi::mmap");
 		return -1;
+	}
+	if (drv.w_max < 1) {
+		p = (char *) drv.image;
+		drv.w_max = 0;
+
+		while (*p != '\0')
+			if (*p++ == '\n')
+				drv.w_max++;
 	}
 	return 0;
 
@@ -105,6 +114,9 @@ readw(char *dst, int size)
 
 	if (*p == 0)
 		return NULL;	/* EOF */
+
+	if (drv.w_read == drv.w_max)
+		return NULL;
 
 	while (*p != '\0' && *p != '\n' && i < size) {
 		*(s++) = *(p++);

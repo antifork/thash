@@ -102,14 +102,6 @@ static struct neo_options opt[] = {
 };
 
 
-void
-default_settings()
-{
-
-	drv.w_max = 10000;
-
-}
-
 int
 main(int argc, char **argv, char **env)
 {
@@ -124,7 +116,7 @@ main(int argc, char **argv, char **env)
 	if (argv[1][0] == '-' && argv[1][1] == '-')
 		FATAL("%s doesn't support --long-options.\ntype %s -h instead", argv[0], argv[0]);
 
-	default_settings();
+	memset(&drv, 0, sizeof(drv));
 
 	environ = env;
 

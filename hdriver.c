@@ -116,13 +116,13 @@ setup_hdriver()
 		PUTS("drv:hash method     : mask\n");
 		hash.drv = __hash_mask;
 		hash.len = bitlen;
-		hash.mask = (1 << bitlen) - 1;
+		hash.mask = bitlen == 32 ? -1 : (1 << bitlen) - 1;
 		break;
 	case OPT_XOR:
 		PUTS("drv:hash method     : xor-folding\n");
 		hash.drv = __hash_xor_folding;
 		hash.len = bitlen;
-		hash.mask = (1 << bitlen) - 1;
+		hash.mask = bitlen == 32 ? -1 : (1 << bitlen) - 1;
 		break;
 	case OPT_MOD:
 		PUTS("drv:hash method     : lazy mod mapping\n");

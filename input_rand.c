@@ -80,6 +80,10 @@ openr(char *n)
 		ctx.randrsl[i] = (ub4) 0;
 	randinit(&ctx, drv.seed, TRUE);
 
+	if (drv.w_max < 1)
+		drv.w_max = 10000;
+
+
 	return 0;
 }
 

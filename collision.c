@@ -52,11 +52,12 @@ hash_collision()
 {
 	unsigned char *p;
 	unsigned long h;
+	unsigned long *hlist;
 	unsigned long col;
 	unsigned long total_len;
 	unsigned long segment_len;
 	unsigned long bitmask;
-	int i;
+	int i, j;
 
 	if (drv.open(media) == -1)
 		FATAL("open interface error!");
@@ -71,6 +72,23 @@ hash_collision()
 		segment_len = MIN(rlimit_data >> 21, segment_len);	/* half size of
 									 * rlimit_data or
 									 * regsize */
+
+	hlist = (unsigned long *) malloc(drv.w_max * sizeof(unsigned long));
+
+	if (hlist == NULL)
+		FATAL("malloc() irrecoverable error");
+
+	drv.reset();		/* resetting interface */
+
+	for (j = 0; j < drv.w_max; j++) {
+		if (drv.read(buf, 79) == NULL)
+			FATAL("irrecoverable error");
+
+		hlist[j] = hash.drv(buf);
+	}
+
+	drv.close();		/* close input interface */
+
 	do {
 		p = malloc(segment_len Mbyte);
 	}
@@ -89,13 +107,12 @@ hash_collision()
 		PUTS("step # %d/%d   \r", i + 1, (int) (total_len / segment_len));
 
 		memset(p, 0, segment_len Mbyte);
-		drv.reset();	/* resetting interface */
 
 		/* processing the dictionary */
 
-		while (drv.read(buf, 79) != NULL) {
+		for (j = 0; j < drv.w_max; j++) {
 
-			h = hash.drv(buf);
+			h = hlist[j];
 
 			if (CHECK_BOUND(i * (segment_len Mbyte) + 1, h >> 3, (i + 1) * (segment_len Mbyte))) {
 				if TST_BIT
@@ -108,8 +125,8 @@ hash_collision()
 		/* NEXT */
 	}
 
+	free(hlist);
 	free(p);
-	drv.close();		/* close input interface */
 
 	PUTS("total collisions    : %lu/%d\n", col, drv.w_max);
 
