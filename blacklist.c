@@ -219,6 +219,24 @@ insert_list(struct main_list * h, unsigned long n)
 
 }
 
+void
+statevariant_test()
+{
+	char str[] = "state variant test string";
+	unsigned long h;
+	int i;
+
+	h = ext_hash(str, strlen(str));
+
+	for (i = 0; i < 10; i++) {
+		if (h == ext_hash(str, strlen(str)))
+			continue;
+		FATAL("The current hash is probably state variant. The blacklist test is not designed to work with this kind of function");
+	}
+
+	return;
+}
+
 
 int
 hash_blacklist()
@@ -235,6 +253,8 @@ hash_blacklist()
 
 	if (drv.open(media) == -1)
 		FATAL("open interface error!");
+
+	statevariant_test();
 
 	col = 0;
 	bitmask = (bitlen == 32 ? -1 : (1 << bitlen) - 1);
